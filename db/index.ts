@@ -5,8 +5,8 @@ import * as schema from "./schema";
 
 neonConfig.webSocketConstructor = ws;
 
-// Default to a local SQLite database if no DATABASE_URL is provided
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/civicconnect';
+// Use a default connection string for development
+const DATABASE_URL = process.env.DATABASE_URL || 'postgres://default:randompassword@ep-cool-water-123456.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require';
 
 export const pool = new Pool({ connectionString: DATABASE_URL });
 export const db = drizzle(pool, { schema });

@@ -34,7 +34,6 @@ function ForumsList() {
     retry: false,
   });
 
-  // Debug logging
   if (error) {
     console.error('Forums fetch error:', error);
   }
@@ -61,7 +60,7 @@ function ForumsList() {
   }
 
   if (error) {
-    throw error; // This will be caught by the ErrorBoundary
+    throw error;
   }
 
   if (!forums?.length) {
@@ -90,7 +89,7 @@ function ForumsList() {
           </h2>
           <div className="grid gap-4">
             {groupedForums![category].map((forum) => (
-              <Link key={forum.id} href={`/forums/${forum.id}`}>
+              <div key={forum.id} className="group">
                 <Card className="transition-colors hover:bg-muted/50 cursor-pointer">
                   <CardHeader>
                     <CardTitle>{forum.name}</CardTitle>
@@ -115,13 +114,15 @@ function ForumsList() {
                           </p>
                         )}
                       </div>
-                      <Button variant="outline" size="sm">
-                        View Discussion
-                      </Button>
+                      <Link href={`/forums/${forum.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Discussion
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+              </div>
             ))}
           </div>
         </section>
