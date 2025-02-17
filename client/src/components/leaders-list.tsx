@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/lib/supabase";
 
 type Leader = {
   id: number;
@@ -27,7 +28,6 @@ function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] })
   if (leaders.length === 0) return null;
 
   const formatLeaderName = (name: string) => {
-    // Ensure name parts are properly capitalized
     return name.split(' ')
       .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join(' ');
@@ -74,12 +74,32 @@ function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] })
 export function LeadersList() {
   const { user } = useAuth();
 
-  const { data: leaders = [], isLoading } = useQuery<Leader[]>({
-    queryKey: ['/api/leaders', {
+  const { data: leaders = [], isLoading } = useQuery({
+    queryKey: ['leaders', {
       ward: user?.ward,
       constituency: user?.constituency,
       county: user?.county
     }],
+    queryFn: async () => {
+      let query = supabase
+        .from('officials')
+        .select('*')
+        .eq('status', 'active');
+
+      if (user?.ward) {
+        query = query.eq('ward', user.ward);
+      }
+      if (user?.constituency) {
+        query = query.or(`ward.eq.${user.ward},constituency.eq.${user.constituency}`);
+      }
+      if (user?.county) {
+        query = query.or(`ward.eq.${user.ward},constituency.eq.${user.constituency},county.eq.${user.county}`);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as Leader[];
+    },
     enabled: !!user?.constituency
   });
 
@@ -107,7 +127,6 @@ export function LeadersList() {
 
   // Remove duplicate MPs (those with legislative role)
   const uniqueLeaders = leaders.reduce<Leader[]>((acc, leader) => {
-    // Check if we already have this leader in the same area
     const isDuplicate = acc.some(existing =>
       existing.name === leader.name &&
       existing.constituency === leader.constituency &&
@@ -115,7 +134,6 @@ export function LeadersList() {
     );
 
     if (!isDuplicate) {
-      // If this is a MP/legislative role, standardize to MP
       if (leader.role === "legislative") {
         leader.role = "MP";
       }
