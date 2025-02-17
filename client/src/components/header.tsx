@@ -16,12 +16,14 @@ import {
 } from "./ui/dropdown-menu";
 
 export function Header() {
-  const { user, logoutMutation } = useAuth();
+  const auth = useAuth();
   const isMobile = useIsMobile();
 
-  if (!user && logoutMutation.isPending) {
+  if (!auth || (!auth.user && auth.logoutMutation.isPending)) {
     return null;
   }
+
+  const { user, logoutMutation } = auth;
 
   const navLinks = [
     { href: "/", label: "Home" },
