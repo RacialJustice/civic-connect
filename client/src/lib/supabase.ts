@@ -16,7 +16,8 @@ const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storageKey: 'supabase.auth.token',
+    flowType: 'pkce',
+    redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
   }
 });
 

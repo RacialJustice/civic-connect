@@ -1,27 +1,13 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { type SelectUser } from "@shared/schema";
 import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Session } from '@supabase/supabase-js';
 
-type AuthUser = {
-  id: string;
-  email: string;
-  name?: string | null;
-  village?: string | null;
-  ward?: string | null;
-  constituency?: string | null;
-  county?: string | null;
-  country: string;
-  role: string;
-  emailVerified: boolean;
-  profileComplete: boolean;
-  registrationStep: string;
-};
-
 type AuthContextType = {
-  user: AuthUser | null;
+  user: SelectUser | null;
   isLoading: boolean;
   error: Error | null;
   loginMutation: ReturnType<typeof useLoginMutation>;
@@ -35,12 +21,14 @@ function useLoginMutation() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      // First authenticate with Supabase
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (authError) throw authError;
 
+      // Get the user metadata from the auth response
       const userData = authData.user?.user_metadata;
 
       if (!userData) {
@@ -79,7 +67,6 @@ function useRegisterMutation() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async (userData: any) => {
-      // First create the auth user
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -100,24 +87,6 @@ function useRegisterMutation() {
       if (!data.user) {
         throw new Error("Registration failed");
       }
-
-      // Then create the profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          email: data.user.email!,
-          name: userData.name,
-          role: userData.role || "citizen",
-          village: userData.village,
-          ward: userData.ward,
-          constituency: userData.constituency,
-          county: userData.county,
-          country: userData.country || "Kenya",
-          profile_complete: false
-        });
-
-      if (profileError) throw profileError;
 
       return {
         id: data.user.id,

@@ -11,21 +11,10 @@ import {
   posts,
   forumModerators,
   forumMembers,
-  emergencyServices,
-  type SelectUser,
-  type SelectFeedback,
-  type SelectOfficial,
-  type SelectCommunity,
-  type SelectForum,
-  type SelectParliamentarySession,
-  type SelectDevelopmentProject,
-  type SelectPost,
-  type SelectForumModerator,
-  type SelectForumMember,
-  type SelectEmergencyService
+  emergencyServices
 } from '@shared/schema';
 
-async function migrateTable<T extends Record<string, any>>(tableName: string, data: T[]) {
+async function migrateTable(tableName: string, data: any[]) {
   if (data.length === 0) {
     console.log(`No data to migrate for ${tableName}`);
     return;
@@ -33,23 +22,17 @@ async function migrateTable<T extends Record<string, any>>(tableName: string, da
 
   console.log(`Migrating ${tableName} (${data.length} records)...`);
   try {
-    // Process data in batches of 100 to avoid timeouts
-    const batchSize = 100;
-    for (let i = 0; i < data.length; i += batchSize) {
-      const batch = data.slice(i, i + batchSize);
-      const { error } = await supabase.from(tableName).upsert(
-        batch.map(record => ({
-          ...record,
-          created_at: record.createdAt,
-          updated_at: record.updatedAt,
-        }))
-      );
+    const { error } = await supabase.from(tableName).upsert(
+      data.map(record => ({
+        ...record,
+        created_at: record.createdAt,
+        updated_at: record.updatedAt,
+      }))
+    );
 
-      if (error) {
-        console.error(`Error migrating ${tableName} batch ${i / batchSize + 1}:`, JSON.stringify(error, null, 2));
-        throw error;
-      }
-      console.log(`Successfully migrated batch ${i / batchSize + 1} of ${Math.ceil(data.length / batchSize)} for ${tableName}`);
+    if (error) {
+      console.error(`Error migrating ${tableName}:`, JSON.stringify(error, null, 2));
+      throw error;
     }
     console.log(`Successfully migrated ${data.length} records to ${tableName}`);
   } catch (error) {
@@ -73,41 +56,49 @@ async function migrate() {
     // Start migration
     console.log('Starting migration...');
 
-    // Migrate data in order of dependencies
-    // First, migrate independent tables
+    // Migrate users
     const userData = await db.select().from(users);
-    await migrateTable<SelectUser>('users', userData);
+    await migrateTable('users', userData);
 
-    const officialsData = await db.select().from(officials);
-    await migrateTable<SelectOfficial>('officials', officialsData);
-
-    const communitiesData = await db.select().from(communities);
-    await migrateTable<SelectCommunity>('communities', communitiesData);
-
-    const forumsData = await db.select().from(forums);
-    await migrateTable<SelectForum>('forums', forumsData);
-
-    const parliamentarySessionsData = await db.select().from(parliamentarySessions);
-    await migrateTable<SelectParliamentarySession>('parliamentary_sessions', parliamentarySessionsData);
-
-    // Then migrate dependent tables
-    const developmentProjectsData = await db.select().from(developmentProjects);
-    await migrateTable<SelectDevelopmentProject>('development_projects', developmentProjectsData);
-
-    const postsData = await db.select().from(posts);
-    await migrateTable<SelectPost>('posts', postsData);
-
-    const forumModeratorsData = await db.select().from(forumModerators);
-    await migrateTable<SelectForumModerator>('forum_moderators', forumModeratorsData);
-
-    const forumMembersData = await db.select().from(forumMembers);
-    await migrateTable<SelectForumMember>('forum_members', forumMembersData);
-
-    const emergencyServicesData = await db.select().from(emergencyServices);
-    await migrateTable<SelectEmergencyService>('emergency_services', emergencyServicesData);
-
+    // Migrate feedbacks
     const feedbackData = await db.select().from(feedbacks);
-    await migrateTable<SelectFeedback>('feedbacks', feedbackData);
+    await migrateTable('feedbacks', feedbackData);
+
+    // Migrate officials
+    const officialsData = await db.select().from(officials);
+    await migrateTable('officials', officialsData);
+
+    // Migrate communities
+    const communitiesData = await db.select().from(communities);
+    await migrateTable('communities', communitiesData);
+
+    // Migrate forums
+    const forumsData = await db.select().from(forums);
+    await migrateTable('forums', forumsData);
+
+    // Migrate parliamentary sessions
+    const parliamentarySessionsData = await db.select().from(parliamentarySessions);
+    await migrateTable('parliamentary_sessions', parliamentarySessionsData);
+
+    // Migrate development projects
+    const developmentProjectsData = await db.select().from(developmentProjects);
+    await migrateTable('development_projects', developmentProjectsData);
+
+    // Migrate posts
+    const postsData = await db.select().from(posts);
+    await migrateTable('posts', postsData);
+
+    // Migrate forum moderators
+    const forumModeratorsData = await db.select().from(forumModerators);
+    await migrateTable('forum_moderators', forumModeratorsData);
+
+    // Migrate forum members
+    const forumMembersData = await db.select().from(forumMembers);
+    await migrateTable('forum_members', forumMembersData);
+
+    // Migrate emergency services
+    const emergencyServicesData = await db.select().from(emergencyServices);
+    await migrateTable('emergency_services', emergencyServicesData);
 
     console.log('Migration completed successfully!');
   } catch (error) {
