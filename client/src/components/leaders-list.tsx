@@ -36,7 +36,7 @@ function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] })
               <div className="flex flex-col gap-1">
                 <CardTitle className="text-lg">{leader.name}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {leader.role} - {leader.party}
+                  {leader.role === "MP" || leader.role === "legislative" ? "Member of Parliament" : leader.role} - {leader.party}
                 </p>
               </div>
             </CardHeader>
@@ -45,8 +45,15 @@ function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] })
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
                     <div>
-                      <p className="text-sm text-muted-foreground">Position</p>
-                      <p>{leader.position || leader.role}</p>
+                      <p className="text-sm text-muted-foreground">Area</p>
+                      <p>
+                        {leader.ward 
+                          ? `${leader.ward} Ward`
+                          : leader.constituency 
+                            ? `${leader.constituency} Constituency`
+                            : `${leader.county} County`
+                        }
+                      </p>
                     </div>
                     {leader.email && (
                       <div className="flex items-center gap-2">
@@ -77,7 +84,7 @@ export function LeadersList() {
       constituency: user?.constituency,
       county: user?.county
     }],
-    enabled: !!user?.constituency // Only fetch when constituency is available
+    enabled: !!user?.constituency
   });
 
   if (isLoading) {
@@ -102,8 +109,27 @@ export function LeadersList() {
     );
   }
 
+  // Remove duplicate MPs (those with legislative role)
+  const uniqueLeaders = leaders.reduce<Leader[]>((acc, leader) => {
+    // Check if we already have this leader in the same area
+    const isDuplicate = acc.some(existing => 
+      existing.name === leader.name && 
+      existing.constituency === leader.constituency &&
+      existing.county === leader.county
+    );
+
+    if (!isDuplicate) {
+      // If this is a MP/legislative role, standardize to MP
+      if (leader.role === "legislative") {
+        leader.role = "MP";
+      }
+      acc.push(leader);
+    }
+    return acc;
+  }, []);
+
   // Group leaders by their administrative level
-  const leadersByLevel = leaders.reduce<LeadersByLevel>(
+  const leadersByLevel = uniqueLeaders.reduce<LeadersByLevel>(
     (acc, leader) => {
       if (leader.ward) {
         acc.ward.push(leader);
