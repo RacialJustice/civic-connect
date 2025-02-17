@@ -1,6 +1,8 @@
 import { supabase } from '../client/src/lib/supabase';
-import { Express } from "express";
+import type { Express } from "express";
 import session from "express-session";
+import passport from "passport";
+import MemoryStore from "memorystore";
 import { storage } from "./storage";
 import { type SelectUser } from "@shared/schema";
 
@@ -10,19 +12,24 @@ declare global {
   }
 }
 
+const SessionStore = MemoryStore(session);
+
 export function setupAuth(app: Express) {
-  const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET!,
+  app.use(session({
+    store: new SessionStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    }),
+    secret: process.env.SESSION_SECRET || 'keyboard cat',
     resave: false,
     saveUninitialized: false,
-    store: storage.sessionStore,
     cookie: {
-      secure: false,
-      maxAge: 24 * 60 * 60 * 1000,
-    },
-  };
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
 
-  app.use(session(sessionSettings));
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   app.post("/api/register", async (req, res) => {
     try {
