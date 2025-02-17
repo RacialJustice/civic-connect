@@ -11,9 +11,18 @@ const clients = new Map<WebSocket, { userId: number, username: string }>();
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
-  app.get("/api/leaders", async (_req, res) => {
-    const leaders = await storage.getLeaders();
-    res.json(leaders);
+  app.get("/api/leaders", async (req, res) => {
+    try {
+      const leaders = await storage.getLeaders({
+        ward: req.query.ward as string,
+        constituency: req.query.constituency as string,
+        county: req.query.county as string,
+      });
+      res.json(leaders);
+    } catch (error) {
+      console.error('Error fetching leaders:', error);
+      res.status(500).json({ error: "Failed to fetch leaders" });
+    }
   });
 
   app.get("/api/leaders/:id/feedback", async (req, res) => {
