@@ -42,20 +42,19 @@ async function migrateTable<T extends Record<string, any>>(tableName: string, da
       if (tableName === 'users') {
         for (const user of batch) {
           // First create the auth user
-          const { data: authData, error: authError } = await supabase.auth.signUp({
+          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
             email: user.email,
             password: 'TempPass123!', // Temporary password, users will need to reset
-            options: {
-              data: {
-                name: user.name,
-                role: user.role,
-                village: user.village,
-                ward: user.ward,
-                constituency: user.constituency,
-                county: user.county,
-                country: user.country,
-              },
+            user_metadata: {
+              name: user.name,
+              role: user.role,
+              village: user.village,
+              ward: user.ward,
+              constituency: user.constituency,
+              county: user.county,
+              country: user.country,
             },
+            email_confirm: true
           });
 
           if (authError) {
@@ -111,6 +110,52 @@ async function migrateTable<T extends Record<string, any>>(tableName: string, da
   }
 }
 
+async function testConnection() {
+  try {
+    console.log('Verifying Supabase connection...');
+
+    // Test basic table access
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .limit(1);
+
+    if (profileError) {
+      console.error('Profile table test error:', profileError);
+      throw profileError;
+    }
+
+    const { data: officialsData, error: officialsError } = await supabase
+      .from('officials')
+      .select('id')
+      .limit(1);
+
+    if (officialsError) {
+      console.error('Officials table test error:', officialsError);
+      throw officialsError;
+    }
+
+    console.log('Supabase connection and table access verified successfully');
+
+    // Test RLS policies
+    const { data: publicData, error: publicError } = await supabase
+      .from('profiles')
+      .select('*')
+      .limit(1);
+
+    if (publicError) {
+      console.error('Public access test error:', publicError);
+      throw publicError;
+    }
+
+    console.log('RLS policies working correctly');
+    return true;
+  } catch (error) {
+    console.error('Connection test failed:', error);
+    return false;
+  }
+}
+
 async function migrate() {
   try {
     // First verify database connections
@@ -118,17 +163,11 @@ async function migrate() {
     const testQuery = await db.select().from(users).limit(1);
     console.log('PostgreSQL connection successful');
 
-    console.log('Verifying Supabase connection...');
-    const { data: testData, error: testError } = await supabase
-      .from('profiles')
-      .select('id')
-      .limit(1);
-
-    if (testError) {
-      console.error('Supabase test error details:', testError);
-      throw new Error(`Supabase connection test failed: ${testError.message}`);
+    const connectionSuccessful = await testConnection();
+    if (!connectionSuccessful) {
+      throw new Error('Supabase connection test failed.');
     }
-    console.log('Supabase connection successful');
+
 
     // Start migration
     console.log('Starting migration...');
@@ -136,7 +175,7 @@ async function migrate() {
     // Migrate data in order of dependencies
     // First, migrate independent tables
     const userData = await db.select().from(users);
-    await migrateTable<SelectUser>('users', userData);
+    await migrateTable<SelectUser>('profiles', userData);
 
     const officialsData = await db.select().from(officials);
     await migrateTable<SelectOfficial>('officials', officialsData);
