@@ -1,4 +1,4 @@
-import { Navigation } from "@/components/navigation";
+import { Header } from "@/components/header";
 import { LocationForm } from "@/components/location-form";
 import { LocalUpdates } from "@/components/local-updates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ export default function HomePage() {
   
   return (
     <div>
-      <Navigation />
+      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid gap-8 md:grid-cols-[300px,1fr]">
