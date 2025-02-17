@@ -1,7 +1,6 @@
-
 import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { relations, type RelationConfig } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -20,6 +19,13 @@ export const users = pgTable("users", {
   interests: jsonb("interests").default('[]').notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Create schemas
+export const insertUserSchema = createInsertSchema(users);
+
+// Types
+export type InsertUser = typeof users.$inferInsert;
+export type SelectUser = typeof users.$inferSelect;
 
 export const officials = pgTable("officials", {
   id: serial("id").primaryKey(),
@@ -252,33 +258,20 @@ export const developmentProjectsRelations = relations(developmentProjects, ({ on
   }),
 }));
 
+
 // Schemas
-export const insertUserSchema = createInsertSchema(users);
-export const selectUserSchema = createSelectSchema(users);
 export const insertOfficialSchema = createInsertSchema(officials);
-export const selectOfficialSchema = createSelectSchema(officials);
 export const insertCommunitySchema = createInsertSchema(communities);
-export const selectCommunitySchema = createSelectSchema(communities);
 export const insertResourceSchema = createInsertSchema(resources);
-export const selectResourceSchema = createSelectSchema(resources);
 export const insertForumSchema = createInsertSchema(forums);
-export const selectForumSchema = createSelectSchema(forums);
 export const insertPostSchema = createInsertSchema(posts);
-export const selectPostSchema = createSelectSchema(posts);
 export const insertCommentSchema = createInsertSchema(comments);
-export const selectCommentSchema = createSelectSchema(comments);
 export const insertVoteSchema = createInsertSchema(votes);
-export const selectVoteSchema = createSelectSchema(votes);
 export const insertParliamentarySessionSchema = createInsertSchema(parliamentarySessions);
-export const selectParliamentarySessionSchema = createSelectSchema(parliamentarySessions);
 export const insertAttendanceSchema = createInsertSchema(attendance);
-export const selectAttendanceSchema = createSelectSchema(attendance);
 export const insertBillSchema = createInsertSchema(bills);
-export const selectBillSchema = createSelectSchema(bills);
 export const insertVotingRecordSchema = createInsertSchema(votingRecords);
-export const selectVotingRecordSchema = createSelectSchema(votingRecords);
 export const insertDevelopmentProjectSchema = createInsertSchema(developmentProjects);
-export const selectDevelopmentProjectSchema = createSelectSchema(developmentProjects);
 
 export const feedbacks = pgTable("feedbacks", {
   id: serial("id").primaryKey(),
@@ -290,14 +283,11 @@ export const feedbacks = pgTable("feedbacks", {
 });
 
 export const insertFeedbackSchema = createInsertSchema(feedbacks);
-export const selectFeedbackSchema = createSelectSchema(feedbacks);
 
 export type InsertFeedback = typeof feedbacks.$inferInsert;
 export type SelectFeedback = typeof feedbacks.$inferSelect;
 
 // Types
-export type InsertUser = typeof users.$inferInsert;
-export type SelectUser = typeof users.$inferSelect;
 export type InsertOfficial = typeof officials.$inferInsert;
 export type SelectOfficial = typeof officials.$inferSelect;
 export type InsertCommunity = typeof communities.$inferInsert;

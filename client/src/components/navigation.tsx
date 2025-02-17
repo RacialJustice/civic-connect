@@ -22,7 +22,7 @@ export function Navigation() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <span>Welcome, {user?.displayName}</span>
+            <span>Welcome, {user?.name || 'User'}</span>
             <Button
               variant="secondary"
               size="sm"

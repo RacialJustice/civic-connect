@@ -40,26 +40,25 @@ export function setupAuth(app: Express) {
     },
   };
 
-  app.set("trust proxy", 1);
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
 
   passport.use(
     new LocalStrategy(
-      { usernameField: 'email' }, // Use email field instead of username
+      { usernameField: 'email' },
       async (email, password, done) => {
         try {
           const user = await storage.getUserByEmail(email);
           if (!user) {
             console.log('Login failed: User not found:', email);
-            return done(null, false);
+            return done(null, false, { message: "Invalid email or password" });
           }
 
           const isValid = await comparePasswords(password, user.password);
           if (!isValid) {
             console.log('Login failed: Invalid password for user:', email);
-            return done(null, false);
+            return done(null, false, { message: "Invalid email or password" });
           }
 
           console.log('Login successful for user:', email);
@@ -69,7 +68,7 @@ export function setupAuth(app: Express) {
           return done(err);
         }
       }
-    ),
+    )
   );
 
   passport.serializeUser((user, done) => {
@@ -111,10 +110,10 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user) => {
+    passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
       if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
+        return res.status(401).json({ message: info?.message || "Invalid credentials" });
       }
       req.login(user, (err) => {
         if (err) return next(err);
