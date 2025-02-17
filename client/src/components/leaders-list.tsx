@@ -16,13 +16,14 @@ type Leader = {
 
 export function LeadersList() {
   const { user } = useAuth();
-  
+
   const { data: leaders, isLoading } = useQuery<Leader[]>({
     queryKey: ['/api/leaders', {
       ward: user?.ward,
       constituency: user?.constituency,
       county: user?.county
     }],
+    enabled: !!user // Only fetch when user data is available
   });
 
   if (isLoading) {
@@ -42,7 +43,7 @@ export function LeadersList() {
     return acc;
   }, {} as Record<string, Leader[]>);
 
-  if (!groupedLeaders) {
+  if (!groupedLeaders || Object.keys(groupedLeaders).length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -50,7 +51,9 @@ export function LeadersList() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            No leaders are currently available for your location.
+            {user?.constituency ? 
+              `No leaders are currently available for ${user.constituency}.` :
+              'Please complete your location information to see your local leaders.'}
           </p>
         </CardContent>
       </Card>
