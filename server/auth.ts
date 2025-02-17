@@ -1,9 +1,6 @@
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
+import { supabase } from '../client/src/lib/supabase';
 import { Express } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
 import { storage } from "./storage";
 import { type SelectUser } from "@shared/schema";
 
@@ -13,21 +10,6 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
-}
-
-async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
-}
-
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
@@ -35,128 +17,83 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      secure: false, // Set to true in production with HTTPS
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000,
     },
   };
 
   app.use(session(sessionSettings));
-  app.use(passport.initialize());
-  app.use(passport.session());
 
-  passport.use(
-    new LocalStrategy(
-      { usernameField: 'email' },
-      async (email, password, done) => {
-        try {
-          const user = await storage.getUserByEmail(email);
-          if (!user) {
-            console.log('Login failed: User not found:', email);
-            return done(null, false, { message: "Invalid email or password" });
-          }
-
-          const isValid = await comparePasswords(password, user.password);
-          if (!isValid) {
-            console.log('Login failed: Invalid password for user:', email);
-            return done(null, false, { message: "Invalid email or password" });
-          }
-
-          console.log('Login successful for user:', email);
-          return done(null, user);
-        } catch (err) {
-          console.error('Login error:', err);
-          return done(err);
-        }
-      }
-    )
-  );
-
-  passport.serializeUser((user, done) => {
-    console.log('Serializing user:', user.id);
-    done(null, user.id);
-  });
-
-  // Simple in-memory cache for deserialized users
-  const userCache = new Map<number, any>();
-  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-  passport.deserializeUser(async (id: number, done) => {
+  app.post("/api/register", async (req, res) => {
     try {
-      const cachedUser = userCache.get(id);
-      if (cachedUser) {
-        return done(null, cachedUser);
-      }
+      const { email, password } = req.body;
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-      const user = await storage.getUser(id) || {
-        id,
-        email: '',
-        password: '',
-        role: 'citizen',
-        country: 'Kenya',
-        emailVerified: false,
-        profileComplete: false,
-        registrationStep: 'location',
-        createdAt: new Date(),
-        interests: []
-      };
-      
-      userCache.set(id, user);
-      setTimeout(() => userCache.delete(id), CACHE_TTL);
-      done(null, user);
+      if (authError) throw authError;
+
+      const { data: userData, error: dbError } = await supabase
+        .from('users')
+        .insert([{ ...req.body, id: authData.user?.id }])
+        .select()
+        .single();
+
+      if (dbError) throw dbError;
+
+      res.status(201).json(userData);
     } catch (err) {
-      console.error('Deserialize error:', err);
-      done(err);
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Registration failed' });
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/login", async (req, res) => {
     try {
-      const existingUser = await storage.getUserByEmail(req.body.email);
-      if (existingUser) {
-        return res.status(400).json({ message: "Email already exists" });
-      }
-
-      const hashedPassword = await hashPassword(req.body.password);
-      const user = await storage.createUser({
-        ...req.body,
-        password: hashedPassword,
+      const { email, password } = req.body;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.status(201).json(user);
+      if (error) throw error;
+
+      req.session.userId = data.user.id;
+      res.json(data.user);
+    } catch (err) {
+      res.status(401).json({ error: err instanceof Error ? err.message : 'Login failed' });
+    }
+  });
+
+  app.post("/api/logout", async (req, res) => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      req.session.destroy(() => {
+        res.sendStatus(200);
       });
     } catch (err) {
-      next(err);
+      res.status(500).json({ error: err instanceof Error ? err.message : 'Logout failed' });
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
-      if (err) return next(err);
-      if (!user) {
-        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+  app.get("/api/user", async (req, res) => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        return res.sendStatus(401);
       }
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.json(user);
-      });
-    })(req, res, next);
-  });
 
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
-    });
-  });
+      const { data: userData, error: dbError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      console.log('User not authenticated');
-      return res.sendStatus(401);
+      if (dbError) throw dbError;
+      res.json(userData);
+    } catch (err) {
+      res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to fetch user' });
     }
-    console.log('Returning authenticated user:', req.user);
-    res.json(req.user);
   });
 }
