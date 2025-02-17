@@ -1,13 +1,27 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { type SelectUser } from "@shared/schema";
 import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Session } from '@supabase/supabase-js';
 
+type AuthUser = {
+  id: string;
+  email: string;
+  name?: string | null;
+  village?: string | null;
+  ward?: string | null;
+  constituency?: string | null;
+  county?: string | null;
+  country: string;
+  role: string;
+  emailVerified: boolean;
+  profileComplete: boolean;
+  registrationStep: string;
+};
+
 type AuthContextType = {
-  user: SelectUser | null;
+  user: AuthUser | null;
   isLoading: boolean;
   error: Error | null;
   loginMutation: ReturnType<typeof useLoginMutation>;
@@ -21,14 +35,12 @@ function useLoginMutation() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      // First authenticate with Supabase
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (authError) throw authError;
 
-      // Get the user metadata from the auth response
       const userData = authData.user?.user_metadata;
 
       if (!userData) {
