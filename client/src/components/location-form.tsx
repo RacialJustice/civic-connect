@@ -15,6 +15,7 @@ import {
   isValidWardInConstituency,
   getCountyByConstituency 
 } from "@shared/kenya-locations";
+import { useEffect, useState } from "react";
 
 const locationSchema = z.object({
   village: z.string().optional(),
@@ -46,6 +47,7 @@ type LocationFormData = z.infer<typeof locationSchema>;
 export function LocationForm() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [county, setCounty] = useState<string | null>(null);
 
   const form = useForm<LocationFormData>({
     resolver: zodResolver(locationSchema),
@@ -55,6 +57,17 @@ export function LocationForm() {
       constituency: user?.constituency || "",
     },
   });
+
+  // Watch constituency changes to update county
+  const constituency = form.watch("constituency");
+  useEffect(() => {
+    if (constituency) {
+      const newCounty = getCountyByConstituency(constituency);
+      setCounty(newCounty);
+    } else {
+      setCounty(null);
+    }
+  }, [constituency]);
 
   const updateLocationMutation = useMutation({
     mutationFn: async (data: LocationFormData) => {
@@ -101,20 +114,6 @@ export function LocationForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="ward">Ward (Optional)</Label>
-        <Input
-          id="ward"
-          {...form.register("ward")}
-          placeholder="Enter your ward name"
-        />
-        {form.formState.errors.ward && (
-          <p className="text-sm text-destructive">
-            {form.formState.errors.ward.message}
-          </p>
-        )}
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="constituency">
           Constituency <span className="text-destructive">*</span>
         </Label>
@@ -128,9 +127,34 @@ export function LocationForm() {
             {form.formState.errors.constituency.message}
           </p>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="county">County</Label>
+        <Input
+          id="county"
+          value={county || ""}
+          readOnly
+          disabled
+          className="bg-muted"
+        />
         <p className="text-sm text-muted-foreground">
-          Required. Your county will be automatically determined based on your constituency.
+          County is automatically determined based on your constituency
         </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="ward">Ward (Optional)</Label>
+        <Input
+          id="ward"
+          {...form.register("ward")}
+          placeholder="Enter your ward name"
+        />
+        {form.formState.errors.ward && (
+          <p className="text-sm text-destructive">
+            {form.formState.errors.ward.message}
+          </p>
+        )}
       </div>
 
       <Button
