@@ -48,7 +48,7 @@ export default function ForumsPage() {
         </div>
 
         <div className="space-y-8">
-          {user?.village && (
+          {user && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Village Forums</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -72,7 +72,7 @@ export default function ForumsPage() {
             </section>
           )}
 
-          {user?.ward && (
+          {user && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Ward Forums</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
