@@ -47,12 +47,11 @@ function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] })
                     <div>
                       <p className="text-sm text-muted-foreground">Area</p>
                       <p>
-                        {leader.ward 
-                          ? `${leader.ward} Ward`
-                          : leader.constituency 
-                            ? `${leader.constituency} Constituency`
-                            : `${leader.county} County`
-                        }
+                        {[
+                          leader.ward && `${leader.ward} Ward`,
+                          leader.constituency && `${leader.constituency} Constituency`,
+                          leader.county && `${leader.county} County`
+                        ].filter(Boolean).join(", ")}
                       </p>
                     </div>
                     {leader.email && (
