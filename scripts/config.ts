@@ -1,24 +1,45 @@
+
 import { createClient } from '@supabase/supabase-js';
-import { type Database } from '@shared/schema';
+import { Database } from '../shared/schema';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_KEY || '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables:');
-  console.error('VITE_SUPABASE_URL:', supabaseUrl ? 'Present' : 'Missing');
-  console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Present' : 'Missing');
-  throw new Error('Missing required Supabase configuration. Please check your environment variables.');
+const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+
+async function createTables() {
+  const { error } = await supabase.rpc('exec_sql', {
+    sql_string: `
+      -- Create tables
+      CREATE TABLE IF NOT EXISTS public.users (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        name TEXT,
+        village TEXT,
+        ward TEXT,
+        constituency TEXT,
+        county TEXT,
+        country TEXT DEFAULT 'Kenya' NOT NULL,
+        role TEXT DEFAULT 'citizen' NOT NULL,
+        level TEXT,
+        email_verified BOOLEAN DEFAULT FALSE NOT NULL,
+        verification_token TEXT,
+        verification_token_expiry TIMESTAMP,
+        interests JSONB DEFAULT '[]' NOT NULL,
+        profile_complete BOOLEAN DEFAULT FALSE NOT NULL,
+        registration_step TEXT DEFAULT 'location' NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `
+  });
+
+  if (error) {
+    console.error('Error creating tables:', error);
+    throw error;
+  }
 }
 
-export const supabase = createClient<Database>(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
-  }
-);
+createTables()
+  .then(() => console.log('Tables created successfully'))
+  .catch(console.error);
