@@ -20,7 +20,7 @@ import { ErrorBoundary } from "@/components/error-boundary"; // Added import
 
 function Router() {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary fallback={<div>Something went wrong. Please refresh the page.</div>}>
       <Switch>
         <Route path="/auth" component={AuthPage} />
         <ProtectedRoute path="/" component={HomePage} />

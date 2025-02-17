@@ -10,6 +10,10 @@ export function Header() {
   const { user, logoutMutation } = useAuth();
   const isMobile = useIsMobile();
 
+  if (!user && logoutMutation.isPending) {
+    return null;
+  }
+
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/leaders", label: "Leaders" },
