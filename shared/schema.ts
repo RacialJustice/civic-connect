@@ -1,6 +1,6 @@
 import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { relations } from "drizzle-orm";
+import { relations, type AnyPgColumn } from "drizzle-orm";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -13,11 +13,13 @@ export const users = pgTable("users", {
   county: text("county"),
   country: text("country").default("Kenya").notNull(),
   role: text("role").default("citizen").notNull(),
-  level: text("level"), 
+  level: text("level"), // For leaders: national, county, constituency, ward
   emailVerified: boolean("email_verified").default(false).notNull(),
   verificationToken: text("verification_token"),
   verificationTokenExpiry: timestamp("verification_token_expiry"),
   interests: jsonb("interests").default('[]').notNull(),
+  profileComplete: boolean("profile_complete").default(false).notNull(),
+  registrationStep: text("registration_step").default("location").notNull(), // location, interests, verification
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -31,8 +33,11 @@ export type SelectUser = typeof users.$inferSelect;
 export const officials = pgTable("officials", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  role: text("role").notNull(),
-  level: text("level").notNull(),
+  role: text("role").notNull(), // MP, Senator, Women Rep, MCA, Nominated
+  level: text("level").notNull(), // national, county, constituency, ward
+  position: text("position").notNull(), // executive, legislative
+  houseType: text("house_type"), // upper_house (Senate), lower_house (National Assembly), county_assembly
+  representationType: text("representation_type"), // elected, nominated
   party: text("party"),
   photo: text("photo"),
   email: text("email"),
@@ -45,7 +50,8 @@ export const officials = pgTable("officials", {
   termStart: timestamp("term_start"),
   termEnd: timestamp("term_end"),
   responsibilities: text("responsibilities"),
-  socialMedia: text("social_media"),
+  socialMedia: jsonb("social_media").default('{}'),
+  status: text("status").default("active").notNull(), // active, inactive, suspended
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -53,7 +59,7 @@ export const communities = pgTable("communities", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   type: text("type").notNull(),
-  parentId: integer("parent_id").references(() => communities.id),
+  parentId: integer("parent_id").references((): AnyPgColumn => communities.id),
   description: text("description"),
   population: integer("population"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -99,7 +105,7 @@ export const comments = pgTable("comments", {
   content: text("content").notNull(),
   postId: integer("post_id").notNull().references(() => posts.id),
   authorId: integer("author_id").notNull().references(() => users.id),
-  parentId: integer("parent_id").references(() => comments.id),
+  parentId: integer("parent_id").references((): AnyPgColumn => comments.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -313,3 +319,18 @@ export type InsertVotingRecord = typeof votingRecords.$inferInsert;
 export type SelectVotingRecord = typeof votingRecords.$inferSelect;
 export type InsertDevelopmentProject = typeof developmentProjects.$inferInsert;
 export type SelectDevelopmentProject = typeof developmentProjects.$inferSelect;
+
+export const officialsRelations = relations(officials, ({ many }) => ({
+  constituents: many(users),
+  feedbacks: many(feedbacks),
+  developmentProjects: many(developmentProjects),
+  votingRecords: many(votingRecords),
+  attendanceRecords: many(attendance),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  feedbacks: many(feedbacks),
+  posts: many(posts),
+  votes: many(votes),
+  comments: many(comments),
+}));

@@ -3,8 +3,15 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertFeedbackSchema, type InsertFeedback } from "@shared/schema";
+import { insertFeedbackSchema } from "@shared/schema";
 import { getCountyByConstituency, validateWardInConstituency } from "@shared/constants";
+import type { IncomingMessage } from "http";
+import type { SelectUser } from "@shared/schema";
+
+// Extend the IncomingMessage interface to include the user property
+interface AuthenticatedRequest extends IncomingMessage {
+  user?: SelectUser;
+}
 
 // Maintain a list of connected clients
 const clients = new Map<WebSocket, { userId: number, username: string }>();
@@ -232,10 +239,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
 
-  // Initialize WebSocket server
+  // Initialize WebSocket server with proper types
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
-  wss.on('connection', (ws, req) => {
+  wss.on('connection', (ws: WebSocket, req: AuthenticatedRequest) => {
     console.log('New WebSocket connection');
 
     // Authentication check using the session

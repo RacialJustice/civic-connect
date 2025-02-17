@@ -47,7 +47,25 @@ export interface IStorage {
   getForumPosts(forumId: number): Promise<SelectPost[]>;
   createPost(post: InsertPost): Promise<SelectPost>;
   upsertVote(vote: { postId: number; userId: number; type: string }): Promise<void>;
+  updateRegistrationStep(userId: number, step: string): Promise<SelectUser>;
+  completeUserProfile(userId: number): Promise<SelectUser>;
+  getLocalOfficials(location: {
+    village?: string;
+    ward?: string;
+    constituency?: string;
+    county?: string;
+  }): Promise<SelectOfficial[]>;
+  getWomenRepresentative(county: string): Promise<SelectOfficial | undefined>;
+  getSenator(county: string): Promise<SelectOfficial | undefined>;
+  getMemberOfParliament(constituency: string): Promise<SelectOfficial | undefined>;
 }
+
+export interface Feedback extends InsertFeedback {
+    id: number;
+    userId: number;
+    timestamp: Date;
+}
+
 
 export class MemStorage implements IStorage {
   private users: Map<number, SelectUser>;
@@ -59,8 +77,8 @@ export class MemStorage implements IStorage {
   private forums: Map<number, SelectForum>;
   private parliamentarySessions: Map<number, SelectParliamentarySession>;
   private developmentProjects: Map<number, SelectDevelopmentProject>;
-  private posts: Map<number, SelectPost> | undefined;
-  private votes: Map<string, { postId: number; userId: number; type: string; id: string; createdAt: Date; }> | undefined;
+  private posts: Map<number, SelectPost>;
+  private votes: Map<string, { postId: number; userId: number; type: string; id: string; createdAt: Date }>;
   sessionStore: session.Store;
 
   constructor() {
@@ -71,6 +89,8 @@ export class MemStorage implements IStorage {
     this.forums = new Map();
     this.parliamentarySessions = new Map();
     this.developmentProjects = new Map();
+    this.posts = new Map();
+    this.votes = new Map();
     this.currentUserId = 1;
     this.currentFeedbackId = 1;
     this.sessionStore = new MemoryStore({
@@ -94,10 +114,13 @@ export class MemStorage implements IStorage {
       county: "Nairobi",
       country: "Kenya",
       role: "admin",
+      level: null,
       emailVerified: true,
       verificationToken: null,
       verificationTokenExpiry: null,
       interests: ["governance", "development"],
+      profileComplete: true,
+      registrationStep: "completed",
       createdAt: new Date(),
     };
     this.users.set(adminUser.id, adminUser);
@@ -108,6 +131,9 @@ export class MemStorage implements IStorage {
       name: "Hon. Sarah Kamau",
       role: "Member of Parliament",
       level: "National",
+      position: "legislative",
+      houseType: "lower_house",
+      representationType: "elected",
       party: "Democratic Party",
       photo: null,
       email: "sarah.kamau@parliament.go.ke",
@@ -120,7 +146,8 @@ export class MemStorage implements IStorage {
       termStart: new Date("2022-08-09"),
       termEnd: new Date("2027-08-09"),
       responsibilities: "Legislative duties, constituency development",
-      socialMedia: null,
+      socialMedia: {},
+      status: "active",
       createdAt: new Date(),
     };
     this.officials.set(official1.id, official1);
@@ -130,6 +157,9 @@ export class MemStorage implements IStorage {
       name: "Hon. John Mwangi",
       role: "County Assembly Member",
       level: "County",
+      position: "legislative",
+      houseType: "lower_house",
+      representationType: "elected",
       party: "Unity Party",
       photo: null,
       email: "john.mwangi@assembly.go.ke",
@@ -142,12 +172,12 @@ export class MemStorage implements IStorage {
       termStart: new Date("2022-08-09"),
       termEnd: new Date("2027-08-09"),
       responsibilities: "County legislation, ward development",
-      socialMedia: null,
+      socialMedia: {},
+      status: "active",
       createdAt: new Date(),
     };
     this.officials.set(official2.id, official2);
 
-    // Add test leaders at different levels
     const nationalLeader: SelectUser = {
       id: this.currentUserId++,
       email: "national@gov.ke",
@@ -164,6 +194,8 @@ export class MemStorage implements IStorage {
       verificationToken: null,
       verificationTokenExpiry: null,
       interests: ["governance"],
+      profileComplete: true,
+      registrationStep: "completed",
       createdAt: new Date(),
     };
     this.users.set(nationalLeader.id, nationalLeader);
@@ -184,6 +216,8 @@ export class MemStorage implements IStorage {
       verificationToken: null,
       verificationTokenExpiry: null,
       interests: ["development"],
+      profileComplete: true,
+      registrationStep: "completed",
       createdAt: new Date(),
     };
     this.users.set(countyLeader.id, countyLeader);
@@ -204,6 +238,8 @@ export class MemStorage implements IStorage {
       verificationToken: null,
       verificationTokenExpiry: null,
       interests: ["education"],
+      profileComplete: true,
+      registrationStep: "completed",
       createdAt: new Date(),
     };
     this.users.set(constituencyLeader.id, constituencyLeader);
@@ -224,9 +260,63 @@ export class MemStorage implements IStorage {
       verificationToken: null,
       verificationTokenExpiry: null,
       interests: ["local development"],
+      profileComplete: true,
+      registrationStep: "completed",
       createdAt: new Date(),
     };
     this.users.set(wardLeader.id, wardLeader);
+
+    const womenRep: SelectOfficial = {
+      id: 3,
+      name: "Hon. Jane Njeri",
+      role: "Women Representative",
+      level: "county",
+      position: "legislative",
+      houseType: "lower_house",
+      representationType: "elected",
+      party: "Democratic Party",
+      photo: null,
+      email: "jane.njeri@parliament.go.ke",
+      phone: "+254700000003",
+      village: null,
+      ward: null,
+      constituency: null,
+      county: "Nairobi",
+      country: "Kenya",
+      termStart: new Date("2022-08-09"),
+      termEnd: new Date("2027-08-09"),
+      responsibilities: "Women representation, gender equality advocacy",
+      socialMedia: {},
+      status: "active",
+      createdAt: new Date(),
+    };
+    this.officials.set(womenRep.id, womenRep);
+
+    const senator: SelectOfficial = {
+      id: 4,
+      name: "Hon. James Orengo",
+      role: "Senator",
+      level: "county",
+      position: "legislative",
+      houseType: "upper_house",
+      representationType: "elected",
+      party: "Unity Party",
+      photo: null,
+      email: "james.orengo@senate.go.ke",
+      phone: "+254700000004",
+      village: null,
+      ward: null,
+      constituency: null,
+      county: "Nairobi",
+      country: "Kenya",
+      termStart: new Date("2022-08-09"),
+      termEnd: new Date("2027-08-09"),
+      responsibilities: "County representation, legislation review",
+      socialMedia: {},
+      status: "active",
+      createdAt: new Date(),
+    };
+    this.officials.set(senator.id, senator);
   }
 
   async getUser(id: number): Promise<SelectUser | undefined> {
@@ -252,10 +342,13 @@ export class MemStorage implements IStorage {
       county: insertUser.county || null,
       country: insertUser.country || "Kenya",
       role: insertUser.role || "citizen",
+      level: null,
       emailVerified: insertUser.emailVerified || false,
       verificationToken: insertUser.verificationToken || null,
       verificationTokenExpiry: insertUser.verificationTokenExpiry || null,
       interests: insertUser.interests || [],
+      profileComplete: false,
+      registrationStep: "incomplete",
       createdAt: new Date(),
     };
     this.users.set(id, user);
@@ -460,22 +553,20 @@ export class MemStorage implements IStorage {
 
   async getForumPosts(forumId: number): Promise<SelectPost[]> {
     // Return posts for the given forum
-    return Array.from(this.posts?.values() || [])
+    return Array.from(this.posts.values())
       .filter(post => post.forumId === forumId);
   }
 
   async createPost(post: InsertPost): Promise<SelectPost> {
-    const id = this.posts?.size ? Math.max(...Array.from(this.posts.keys())) + 1 : 1;
-    const newPost = {
+    const id = this.posts.size ? Math.max(...Array.from(this.posts.keys())) + 1 : 1;
+    const newPost: SelectPost = {
       ...post,
       id,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      pinned: post.pinned ?? null,
+      locked: post.locked ?? null,
     };
-
-    if (!this.posts) {
-      this.posts = new Map();
-    }
 
     this.posts.set(id, newPost);
     return newPost;
@@ -483,16 +574,87 @@ export class MemStorage implements IStorage {
 
   async upsertVote(vote: { postId: number; userId: number; type: string }): Promise<void> {
     // Stub implementation - just store the vote
-    if (!this.votes) {
-      this.votes = new Map();
-    }
-
     const voteId = `${vote.postId}-${vote.userId}`;
     this.votes.set(voteId, {
       ...vote,
       id: voteId,
       createdAt: new Date()
     });
+  }
+
+  async updateRegistrationStep(userId: number, step: string): Promise<SelectUser> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser = {
+      ...user,
+      registrationStep: step,
+    };
+
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async completeUserProfile(userId: number): Promise<SelectUser> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser = {
+      ...user,
+      profileComplete: true,
+      registrationStep: "completed",
+    };
+
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async getLocalOfficials(location: {
+    village?: string;
+    ward?: string;
+    constituency?: string;
+    county?: string;
+  }): Promise<SelectOfficial[]> {
+    return Array.from(this.officials.values()).filter(official => {
+      if (location.village && official.village === location.village) return true;
+      if (location.ward && official.ward === location.ward) return true;
+      if (location.constituency && official.constituency === location.constituency) return true;
+      if (location.county && official.county === location.county) return true;
+      return false;
+    });
+  }
+
+  async getWomenRepresentative(county: string): Promise<SelectOfficial | undefined> {
+    return Array.from(this.officials.values()).find(
+      official => 
+        official.county === county && 
+        official.role === "Women Representative" &&
+        official.status === "active"
+    );
+  }
+
+  async getSenator(county: string): Promise<SelectOfficial | undefined> {
+    return Array.from(this.officials.values()).find(
+      official => 
+        official.county === county && 
+        official.role === "Senator" &&
+        official.houseType === "upper_house" &&
+        official.status === "active"
+    );
+  }
+
+  async getMemberOfParliament(constituency: string): Promise<SelectOfficial | undefined> {
+    return Array.from(this.officials.values()).find(
+      official => 
+        official.constituency === constituency && 
+        official.role === "MP" &&
+        official.houseType === "lower_house" &&
+        official.status === "active"
+    );
   }
 }
 
