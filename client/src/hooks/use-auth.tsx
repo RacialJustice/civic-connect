@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { type SelectUser, type InsertUser } from "@shared/schema";
+import { type SelectUser } from "@shared/schema";
 import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
@@ -21,21 +21,37 @@ function useLoginMutation() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // First authenticate with Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      if (error) throw error;
+      if (authError) throw authError;
 
-      // After successful auth, fetch the user data from our users table
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
+      // Get the user metadata from the auth response
+      const userData = authData.user?.user_metadata;
 
-      if (userError) throw userError;
-      return userData;
+      if (!userData) {
+        throw new Error("No user data found");
+      }
+
+      return {
+        id: authData.user.id,
+        email: authData.user.email!,
+        name: userData.name,
+        village: userData.village,
+        ward: userData.ward,
+        constituency: userData.constituency,
+        county: userData.county,
+        country: userData.country || "Kenya",
+        role: userData.role || "citizen",
+        emailVerified: authData.user.email_confirmed_at !== null,
+        profileComplete: false,
+        registrationStep: "location",
+      };
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(["/api/user"], user);
     },
     onError: (error: Error) => {
       toast({
@@ -50,24 +66,36 @@ function useLoginMutation() {
 function useRegisterMutation() {
   const { toast } = useToast();
   return useMutation({
-    mutationFn: async (userData: InsertUser) => {
+    mutationFn: async (userData: any) => {
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
           data: {
             name: userData.name,
-            role: userData.role,
+            role: userData.role || "citizen",
             village: userData.village,
             ward: userData.ward,
             constituency: userData.constituency,
             county: userData.county,
-            country: userData.country,
+            country: userData.country || "Kenya",
           },
         },
       });
       if (error) throw error;
-      return data.user;
+
+      if (!data.user) {
+        throw new Error("Registration failed");
+      }
+
+      return {
+        id: data.user.id,
+        ...data.user.user_metadata,
+        email: data.user.email!,
+        emailVerified: data.user.email_confirmed_at !== null,
+        profileComplete: false,
+        registrationStep: "location",
+      };
     },
     onError: (error: Error) => {
       toast({
@@ -86,6 +114,9 @@ function useLogoutMutation() {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     },
+    onSuccess: () => {
+      queryClient.setQueryData(["/api/user"], null);
+    },
     onError: (error: Error) => {
       toast({
         title: "Logout failed",
@@ -99,7 +130,6 @@ function useLogoutMutation() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Get initial session
@@ -125,19 +155,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       if (!session?.user) return null;
 
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error) throw error;
-        return data;
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        return null;
-      }
+      // Return user data from session
+      return {
+        id: session.user.id,
+        email: session.user.email!,
+        ...session.user.user_metadata,
+        emailVerified: session.user.email_confirmed_at !== null,
+        profileComplete: false,
+        registrationStep: "location",
+      };
     },
     enabled: !!session?.user,
   });
