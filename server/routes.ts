@@ -42,6 +42,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(feedback);
   });
 
+  // Search endpoints
+  app.get("/api/search/officials", async (req, res) => {
+    const { term, location } = req.query;
+    const officials = await storage.searchOfficials(
+      term as string,
+      location as string
+    );
+    res.json(officials);
+  });
+
+  app.get("/api/search/communities", async (req, res) => {
+    const { term, location } = req.query;
+    const communities = await storage.searchCommunities(
+      term as string,
+      location as string
+    );
+    res.json(communities);
+  });
+
+  app.get("/api/search/forums", async (req, res) => {
+    const { term, category } = req.query;
+    const forums = await storage.searchForums(
+      term as string,
+      category as string
+    );
+    res.json(forums);
+  });
+
+  app.get("/api/search/parliament", async (req, res) => {
+    const { term, type } = req.query;
+    const sessions = await storage.searchParliamentarySessions(
+      term as string,
+      type as string
+    );
+    res.json(sessions);
+  });
+
+  app.get("/api/search/projects", async (req, res) => {
+    const { term, location, status } = req.query;
+    const projects = await storage.searchDevelopmentProjects(
+      term as string,
+      location as string,
+      status as string
+    );
+    res.json(projects);
+  });
+
   const httpServer = createServer(app);
 
   // Initialize WebSocket server

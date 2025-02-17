@@ -1,6 +1,7 @@
 import { Navigation } from "@/components/navigation";
 import { EngagementMetrics } from "@/components/engagement-metrics";
 import { Chat } from "@/components/chat";
+import { SearchInterface } from "@/components/search-interface";
 import { useQuery } from "@tanstack/react-query";
 import { User, Feedback } from "@shared/schema";
 import { Loader2 } from "lucide-react";
@@ -27,8 +28,13 @@ export default function Dashboard() {
     <div>
       <Navigation />
 
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Engagement Dashboard</h1>
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        <h1 className="text-4xl font-bold">Engagement Dashboard</h1>
+
+        <div className="bg-card p-6 rounded-lg shadow">
+          <h2 className="text-2xl font-semibold mb-4">Search</h2>
+          <SearchInterface />
+        </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           <EngagementMetrics
