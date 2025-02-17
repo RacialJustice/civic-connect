@@ -267,6 +267,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(posts);
   });
 
+  app.get("/api/forums", async (req, res) => {
+    try {
+      const forums = await storage.getForumsByLocation({});
+      res.json(forums);
+    } catch (error) {
+      res.status(500).json({ error: error instanceof Error ? error.message : "Failed to fetch forums" });
+    }
+  });
+
+  app.get("/api/forums/village", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const forums = await storage.getForumsByLocation({
+        village: req.user?.village
+      });
+      res.json(forums);
+    } catch (error) {
+      res.status(500).json({ error: error instanceof Error ? error.message : "Failed to fetch village forums" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Initialize WebSocket server with proper types
