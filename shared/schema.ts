@@ -1,6 +1,6 @@
 import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { relations, type AnyPgColumn } from "drizzle-orm";
+import { relations, type AnyColumn } from "drizzle-orm";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -59,7 +59,7 @@ export const communities = pgTable("communities", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   type: text("type").notNull(),
-  parentId: integer("parent_id").references((): AnyPgColumn => communities.id),
+  parentId: integer("parent_id").references(() => communities.id),
   description: text("description"),
   population: integer("population"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -107,7 +107,7 @@ export const comments = pgTable("comments", {
   content: text("content").notNull(),
   postId: integer("post_id").notNull().references(() => posts.id),
   authorId: integer("author_id").notNull().references(() => users.id),
-  parentId: integer("parent_id").references((): AnyPgColumn => comments.id),
+  parentId: integer("parent_id").references(() => comments.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -261,7 +261,6 @@ export const feedbacks = pgTable("feedbacks", {
   rating: integer("rating"),
   timestamp: timestamp("timestamp").defaultNow(),
 });
-
 
 export const emergencyServices = pgTable("emergency_services", {
   id: serial("id").primaryKey(),
