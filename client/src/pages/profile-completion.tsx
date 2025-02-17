@@ -21,6 +21,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+<<<<<<< HEAD
 import { getCountyByConstituency, validateWardInConstituency } from "@shared/constants";
 
 const profileSchema = z.object({
@@ -37,6 +38,15 @@ const profileSchema = z.object({
     path: ["ward"],
   }
 );
+=======
+
+const profileSchema = z.object({
+  village: z.string().min(1, "Village is required"),
+  ward: z.string().min(1, "Ward is required"),
+  constituency: z.string().min(1, "Constituency is required"),
+  county: z.string().min(1, "County is required"),
+});
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
 
 type ProfileData = z.infer<typeof profileSchema>;
 
@@ -45,7 +55,11 @@ export default function ProfileCompletion() {
   const [, setLocation] = useLocation();
 
   // If user already has location info, redirect to home
+<<<<<<< HEAD
   if (user?.ward && user?.county && user?.constituency) {
+=======
+  if (user?.ward && user?.county && user?.constituency && user?.village) {
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
     setLocation("/");
     return null;
   }
@@ -56,11 +70,16 @@ export default function ProfileCompletion() {
       village: user?.village || "",
       ward: user?.ward || "",
       constituency: user?.constituency || "",
+<<<<<<< HEAD
+=======
+      county: user?.county || "",
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
     },
   });
 
   const onSubmit = async (data: ProfileData) => {
     try {
+<<<<<<< HEAD
       const county = getCountyByConstituency(data.constituency);
       if (!county) {
         form.setError("constituency", {
@@ -73,6 +92,9 @@ export default function ProfileCompletion() {
         ...data,
         county,
       });
+=======
+      const res = await apiRequest("PATCH", "/api/user/profile", data);
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
       const updatedUser = await res.json();
       queryClient.setQueryData(["/api/user"], updatedUser);
       setLocation("/");
@@ -89,8 +111,13 @@ export default function ProfileCompletion() {
         <CardHeader>
           <CardTitle>Complete Your Profile</CardTitle>
           <CardDescription>
+<<<<<<< HEAD
             Help us connect you with your local representatives by providing your location
             details in Kenya. Start with your village and work up to your constituency.
+=======
+            Help us connect you with your local representatives by providing your location details in Kenya.
+            Start with your village and work up to your county.
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,7 +128,11 @@ export default function ProfileCompletion() {
                 name="village"
                 render={({ field }) => (
                   <FormItem>
+<<<<<<< HEAD
                     <FormLabel>Village (Optional)</FormLabel>
+=======
+                    <FormLabel>Village</FormLabel>
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
                     <FormControl>
                       <Input {...field} placeholder="Enter your village name" />
                     </FormControl>
@@ -114,7 +145,11 @@ export default function ProfileCompletion() {
                 name="ward"
                 render={({ field }) => (
                   <FormItem>
+<<<<<<< HEAD
                     <FormLabel>Ward (Optional)</FormLabel>
+=======
+                    <FormLabel>Ward</FormLabel>
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
                     <FormControl>
                       <Input {...field} placeholder="Enter your ward name" />
                     </FormControl>
@@ -127,14 +162,34 @@ export default function ProfileCompletion() {
                 name="constituency"
                 render={({ field }) => (
                   <FormItem>
+<<<<<<< HEAD
                     <FormLabel>Constituency *</FormLabel>
+=======
+                    <FormLabel>Constituency</FormLabel>
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
                     <FormControl>
                       <Input {...field} placeholder="Enter your constituency name" />
                     </FormControl>
                     <FormMessage />
+<<<<<<< HEAD
                     <p className="text-sm text-muted-foreground">
                       Required. Your county will be automatically determined based on your constituency.
                     </p>
+=======
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="county"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>County</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter your county name" />
+                    </FormControl>
+                    <FormMessage />
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
                   </FormItem>
                 )}
               />
@@ -147,4 +202,8 @@ export default function ProfileCompletion() {
       </Card>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b

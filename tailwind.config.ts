@@ -22,7 +22,11 @@ export default {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
+<<<<<<< HEAD
           DEFAULT: "hsl(var(--primary))",
+=======
+          DEFAULT: "var(--primary)",
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
@@ -34,8 +38,13 @@ export default {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
+<<<<<<< HEAD
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+=======
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -54,16 +63,24 @@ export default {
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
+<<<<<<< HEAD
           primary: "hsl(var(--sidebar-primary))",
           "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
           accent: "hsl(var(--sidebar-accent))",
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+=======
+          primary: "var(--primary)",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "var(--accent)",
+          "accent-foreground": "var(--accent-foreground)",
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
       },
       keyframes: {
         "accordion-down": {
+<<<<<<< HEAD
           from: {
             height: "0",
           },
@@ -78,6 +95,14 @@ export default {
           to: {
             height: "0",
           },
+=======
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
         },
       },
       animation: {
@@ -87,4 +112,8 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+<<<<<<< HEAD
 } satisfies Config;
+=======
+} satisfies Config;
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b

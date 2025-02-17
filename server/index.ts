@@ -1,11 +1,19 @@
 import express, { type Request, Response, NextFunction } from "express";
+<<<<<<< HEAD
 import { registerRoutes } from "./routes";
+=======
+import { registerRoutes, PORT } from "./routes";
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+<<<<<<< HEAD
+=======
+// Add request logging middleware
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -37,6 +45,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+<<<<<<< HEAD
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -63,3 +72,40 @@ app.use((req, res, next) => {
     log(`serving on port ${PORT}`);
   });
 })();
+=======
+  try {
+    const server = registerRoutes(app);
+
+    // Global error handler
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      log(`Error: ${message}`);
+      res.status(status).json({ message });
+    });
+
+    // Always set up Vite in development mode for Replit
+    await setupVite(app, server);
+
+    // Try alternative ports if the default port is in use
+    const startServer = (port: number) => {
+      server.listen(port, "0.0.0.0", () => {
+        log(`Server running on port ${port}`);
+      }).on('error', (err: any) => {
+        if (err.code === 'EADDRINUSE' && port < PORT + 10) {
+          log(`Port ${port} is in use, trying ${port + 1}`);
+          startServer(port + 1);
+        } else {
+          log(`Failed to start server: ${err.message}`);
+          process.exit(1);
+        }
+      });
+    };
+
+    startServer(PORT);
+  } catch (error) {
+    log(`Failed to start application: ${error}`);
+    process.exit(1);
+  }
+})();
+>>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
