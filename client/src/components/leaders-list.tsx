@@ -34,7 +34,7 @@ function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] })
           <Card key={leader.id}>
             <CardHeader>
               <div className="flex flex-col gap-1">
-                <CardTitle className="text-lg">{leader.name}</CardTitle>
+                <CardTitle className="text-lg font-bold">{leader.name}</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   {leader.role === "MP" || leader.role === "legislative" ? "Member of Parliament" : leader.role} - {leader.party}
                 </p>
@@ -78,7 +78,7 @@ export function LeadersList() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-8">
+      <div className="flex justify-center py-8">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
