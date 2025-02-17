@@ -6,6 +6,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Load environment variables from client/.env.local
+import { config } from 'dotenv';
+import { resolve } from 'path';
+config({ path: resolve(__dirname, '../client/.env.local') });
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
