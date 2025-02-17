@@ -36,8 +36,8 @@ export const officials = pgTable("officials", {
   role: text("role").notNull(), // MP, Senator, Women Rep, MCA, Nominated
   level: text("level").notNull(), // national, county, constituency, ward
   position: text("position").notNull(), // executive, legislative
-  houseType: text("house_type"), // upper_house (Senate), lower_house (National Assembly), county_assembly
-  representationType: text("representation_type"), // elected, nominated
+  house_type: text("house_type"), // upper_house (Senate), lower_house (National Assembly), county_assembly
+  representation_type: text("representation_type"), // elected, nominated
   party: text("party"),
   photo: text("photo"),
   email: text("email"),
@@ -47,12 +47,12 @@ export const officials = pgTable("officials", {
   constituency: text("constituency"),
   county: text("county"),
   country: text("country").default("Kenya").notNull(),
-  termStart: timestamp("term_start"),
-  termEnd: timestamp("term_end"),
+  term_start: timestamp("term_start"),
+  term_end: timestamp("term_end"),
   responsibilities: text("responsibilities"),
-  socialMedia: jsonb("social_media").default('{}'),
-  status: text("status").default("active").notNull(), // active, inactive, suspended
-  createdAt: timestamp("created_at").defaultNow(),
+  social_media: jsonb("social_media").default('{}'),
+  status: text("status").default("active").notNull(),
+  created_at: timestamp("created_at").defaultNow(),
 });
 
 export const communities = pgTable("communities", {
