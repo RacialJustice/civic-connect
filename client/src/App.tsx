@@ -22,7 +22,8 @@ function Router() {
       <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/leaders" component={LeadersPage} />
-      <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Added Profile Route */}
+      <ProtectedRoute path="/profile" component={ProfilePage} />
+      <ProtectedRoute path="/forums" component={ForumsPage} />
       <Route component={NotFound} />
     </Switch>
   );

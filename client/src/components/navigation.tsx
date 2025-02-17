@@ -20,6 +20,7 @@ export function Navigation() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/leaders", label: "Leaders" },
+    { href: "/forums", label: "Forums" },
     { href: "/dashboard", label: "Dashboard" },
   ];
 
