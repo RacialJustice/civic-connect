@@ -23,9 +23,15 @@ type Forum = {
 
 export default function ForumsPage() {
   const { user } = useAuth();
-  const { data: forums } = useQuery<Forum[]>({
+  const { data: forums = [] } = useQuery<Forum[]>({
     queryKey: ["forums"],
-    queryFn: () => fetch("/api/forums").then((res) => res.json()),
+    queryFn: async () => {
+      const res = await fetch("/api/forums");
+      if (!res.ok) {
+        throw new Error("Failed to fetch forums");
+      }
+      return res.json();
+    },
   });
 
   const filterForumsByLevel = (level: string) => {
