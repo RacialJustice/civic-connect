@@ -20,8 +20,9 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
 import { getCountyByConstituency, validateWardInConstituency } from "@shared/constants";
+import { useToast } from "@/hooks/use-toast";
 
 const profileSchema = z.object({
   village: z.string().optional(),
@@ -42,6 +43,7 @@ type ProfileData = z.infer<typeof profileSchema>;
 
 export default function ProfileCompletion() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
 
   // If user already has location info, redirect to home
@@ -69,16 +71,38 @@ export default function ProfileCompletion() {
         return;
       }
 
-      const res = await apiRequest("PATCH", "/api/user/profile", {
-        ...data,
-        county,
+      // Update the user metadata in Supabase
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          village: data.village,
+          ward: data.ward,
+          constituency: data.constituency,
+          county,
+          profileComplete: true,
+        },
       });
-      const updatedUser = await res.json();
-      queryClient.setQueryData(["/api/user"], updatedUser);
+
+      if (updateError) throw updateError;
+
+      // Get the updated session to refresh the user data
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      if (!session?.user) {
+        throw new Error("Session not found after update");
+      }
+
+      toast({
+        title: "Profile updated",
+        description: "Your location information has been saved.",
+      });
+
       setLocation("/");
     } catch (error) {
-      form.setError("root", {
-        message: error instanceof Error ? error.message : "Failed to update profile",
+      toast({
+        title: "Error updating profile",
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        variant: "destructive",
       });
     }
   };
