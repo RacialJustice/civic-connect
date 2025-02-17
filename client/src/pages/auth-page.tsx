@@ -15,9 +15,13 @@ import { insertUserSchema } from "@shared/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Redirect } from "wouter";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("login");
 
   const loginForm = useForm({
     defaultValues: {
@@ -42,6 +46,21 @@ export default function AuthPage() {
     },
   });
 
+  const handleRegisterSubmit = async (data: any) => {
+    try {
+      await registerMutation.mutateAsync(data);
+      toast({
+        title: "Registration successful!",
+        description: "You can now login with your credentials.",
+        duration: 5000,
+      });
+      setActiveTab("login");
+      registerForm.reset();
+    } catch (error) {
+      // Error handling is already done in the mutation
+    }
+  };
+
   if (user) {
     return <Redirect to="/" />;
   }
@@ -49,7 +68,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen grid md:grid-cols-2">
       <div className="flex items-center justify-center p-8">
-        <Tabs defaultValue="login" className="w-full max-w-md">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-md">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="register">Register</TabsTrigger>
@@ -111,9 +130,7 @@ export default function AuthPage() {
               </CardHeader>
               <CardContent>
                 <form
-                  onSubmit={registerForm.handleSubmit((data) =>
-                    registerMutation.mutate(data)
-                  )}
+                  onSubmit={registerForm.handleSubmit(handleRegisterSubmit)}
                   className="space-y-4"
                 >
                   <div className="space-y-2">
