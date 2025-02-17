@@ -27,8 +27,12 @@ export function LeadersList() {
     enabled: !!user?.constituency // Only fetch when constituency is available
   });
 
-  console.log('User:', user);
-  console.log('Leaders:', leaders);
+  console.log('User location:', { 
+    ward: user?.ward,
+    constituency: user?.constituency,
+    county: user?.county
+  });
+  console.log('Leaders data:', leaders);
 
   if (isLoading) {
     return (

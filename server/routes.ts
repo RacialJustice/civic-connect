@@ -26,11 +26,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/leaders", async (req, res) => {
     try {
+      console.log('Received leader request with params:', req.query);
       const leaders = await storage.getLocalOfficials({
         ward: req.query.ward as string,
         constituency: req.query.constituency as string,
         county: req.query.county as string,
       });
+      console.log('Returning leaders:', leaders);
       res.json(leaders);
     } catch (error) {
       console.error('Error fetching leaders:', error);
