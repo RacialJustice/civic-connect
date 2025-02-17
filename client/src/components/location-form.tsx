@@ -114,6 +114,20 @@ export function LocationForm() {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="ward">Ward (Optional)</Label>
+        <Input
+          id="ward"
+          {...form.register("ward")}
+          placeholder="Enter your ward name"
+        />
+        {form.formState.errors.ward && (
+          <p className="text-sm text-destructive">
+            {form.formState.errors.ward.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="constituency">
           Constituency <span className="text-destructive">*</span>
         </Label>
@@ -141,20 +155,6 @@ export function LocationForm() {
         <p className="text-sm text-muted-foreground">
           County is automatically determined based on your constituency
         </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="ward">Ward (Optional)</Label>
-        <Input
-          id="ward"
-          {...form.register("ward")}
-          placeholder="Enter your ward name"
-        />
-        {form.formState.errors.ward && (
-          <p className="text-sm text-destructive">
-            {form.formState.errors.ward.message}
-          </p>
-        )}
       </div>
 
       <Button
