@@ -217,11 +217,14 @@ export class DatabaseStorage implements IStorage {
     const conditions = [];
 
     // Add conditions based on location hierarchy
+    if (location.ward) {
+      conditions.push(eq(officials.ward, location.ward));
+    }
     if (location.constituency) {
       conditions.push(
         or(
           eq(officials.constituency, location.constituency),
-          eq(officials.county, 'Kiambu') // Include county officials when viewing constituency
+          eq(officials.county, location.county) // Include county officials when viewing constituency
         )
       );
     } else if (location.county) {
@@ -231,7 +234,9 @@ export class DatabaseStorage implements IStorage {
     // Only return active officials
     conditions.push(eq(officials.status, 'active'));
 
-    return query.where(and(...conditions));
+    return conditions.length > 0 
+      ? query.where(and(...conditions))
+      : query.where(eq(officials.status, 'active')); // Return all active officials if no location filters
   }
 
   async getWomenRepresentative(county: string): Promise<SelectOfficial | undefined> {
