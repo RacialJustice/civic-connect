@@ -44,16 +44,6 @@ function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] })
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Area</p>
-                      <p>
-                        {[
-                          leader.ward && `${leader.ward} Ward`,
-                          leader.constituency && `${leader.constituency} Constituency`,
-                          leader.county && `${leader.county} County`
-                        ].filter(Boolean).join(", ")}
-                      </p>
-                    </div>
                     {leader.email && (
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
@@ -99,7 +89,7 @@ export function LeadersList() {
       <Card>
         <CardContent className="py-8">
           <p className="text-center text-muted-foreground">
-            {user?.constituency ? 
+            {user?.constituency ?
               `No leaders found for your location.` :
               'Please complete your location information to see your local leaders.'}
           </p>
@@ -111,8 +101,8 @@ export function LeadersList() {
   // Remove duplicate MPs (those with legislative role)
   const uniqueLeaders = leaders.reduce<Leader[]>((acc, leader) => {
     // Check if we already have this leader in the same area
-    const isDuplicate = acc.some(existing => 
-      existing.name === leader.name && 
+    const isDuplicate = acc.some(existing =>
+      existing.name === leader.name &&
       existing.constituency === leader.constituency &&
       existing.county === leader.county
     );
