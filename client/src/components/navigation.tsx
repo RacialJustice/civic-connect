@@ -9,18 +9,18 @@ export function Navigation() {
   return (
     <nav className="bg-primary text-primary-foreground py-4">
       <div className="container mx-auto px-4 flex items-center justify-between">
-        <Link href="/">
-          <a className="text-2xl font-bold">KenyaConnect</a>
-        </Link>
-        
+        <div className="text-2xl font-bold cursor-pointer">
+          <Link href="/">KenyaConnect</Link>
+        </div>
+
         <div className="flex items-center gap-4">
           <Link href="/">
-            <a className="hover:text-primary-foreground/80">Home</a>
+            <span className="hover:text-primary-foreground/80 cursor-pointer">Home</span>
           </Link>
           <Link href="/dashboard">
-            <a className="hover:text-primary-foreground/80">Dashboard</a>
+            <span className="hover:text-primary-foreground/80 cursor-pointer">Dashboard</span>
           </Link>
-          
+
           <div className="flex items-center gap-2">
             <span>Welcome, {user?.displayName}</span>
             <Button
