@@ -17,6 +17,9 @@ export function Navigation() {
           <Link href="/">
             <span className="hover:text-primary-foreground/80 cursor-pointer">Home</span>
           </Link>
+          <Link href="/leaders">
+            <span className="hover:text-primary-foreground/80 cursor-pointer">Leaders</span>
+          </Link>
           <Link href="/dashboard">
             <span className="hover:text-primary-foreground/80 cursor-pointer">Dashboard</span>
           </Link>
