@@ -7,6 +7,12 @@ import { insertFeedbackSchema } from "@shared/schema";
 import { getCountyByConstituency, validateWardInConstituency } from "@shared/constants";
 import type { IncomingMessage } from "http";
 import type { SelectUser } from "@shared/schema";
+import { 
+  isValidCounty, 
+  isValidConstituencyInCounty, 
+  isValidWardInConstituency,
+  getCountyByConstituency 
+} from "@shared/kenya-locations";
 
 // Extend the IncomingMessage interface to include the user property
 interface AuthenticatedRequest extends IncomingMessage {
@@ -111,15 +117,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.sendStatus(401);
     }
 
-    const { ward, constituency } = req.body;
-    const user = await storage.updateUserLocation(req.user!.id, {
-      ward,
-      constituency,
-      // We'll add county based on constituency later
-      county: "Nairobi" // Default for now
-    });
+    const { ward, constituency, village } = req.body;
 
-    res.json(user);
+    try {
+      // Get county based on constituency
+      const county = getCountyByConstituency(constituency);
+      if (!constituency || !county) {
+        return res.status(400).json({
+          error: "Invalid constituency name"
+        });
+      }
+
+      // Validate ward if provided
+      if (ward && !isValidWardInConstituency(ward, constituency)) {
+        return res.status(400).json({
+          error: "The specified ward does not belong to this constituency"
+        });
+      }
+
+      const user = await storage.updateUserLocation(req.user!.id, {
+        ward,
+        constituency,
+        county,
+        village
+      });
+
+      res.json(user);
+    } catch (error) {
+      console.error('Error updating user location:', error);
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Failed to update location"
+      });
+    }
   });
 
   app.patch("/api/user/profile", async (req, res) => {
