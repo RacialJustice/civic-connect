@@ -5,10 +5,10 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { 
   isValidCounty, 
   isValidConstituencyInCounty, 
@@ -58,7 +58,6 @@ export function LocationForm() {
     },
   });
 
-  // Watch constituency changes to update county
   const constituency = form.watch("constituency");
   useEffect(() => {
     if (constituency) {
@@ -76,14 +75,45 @@ export function LocationForm() {
         throw new Error("Invalid constituency");
       }
 
-      const res = await apiRequest("PATCH", "/api/user/location", {
-        ...data,
-        county,
+      // Update auth user metadata
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          village: data.village,
+          ward: data.ward,
+          constituency: data.constituency,
+          county,
+          profileComplete: true,
+        },
       });
-      return res.json();
+
+      if (updateError) throw updateError;
+
+      // Update profile in the profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          village: data.village,
+          ward: data.ward,
+          constituency: data.constituency,
+          county,
+          profile_complete: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user?.id);
+
+      if (profileError) throw profileError;
+
+      // Get fresh session
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      if (!sessionData.session) {
+        throw new Error("Session not found after update");
+      }
+
+      return sessionData.session.user;
     },
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData(["/api/user"], updatedUser);
+    onSuccess: () => {
       toast({
         title: "Location updated",
         description: "Your location has been updated successfully.",

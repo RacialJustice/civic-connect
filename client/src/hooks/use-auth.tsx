@@ -79,6 +79,7 @@ function useRegisterMutation() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async (userData: any) => {
+      // First create the auth user
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -99,6 +100,24 @@ function useRegisterMutation() {
       if (!data.user) {
         throw new Error("Registration failed");
       }
+
+      // Then create the profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email!,
+          name: userData.name,
+          role: userData.role || "citizen",
+          village: userData.village,
+          ward: userData.ward,
+          constituency: userData.constituency,
+          county: userData.county,
+          country: userData.country || "Kenya",
+          profile_complete: false
+        });
+
+      if (profileError) throw profileError;
 
       return {
         id: data.user.id,
