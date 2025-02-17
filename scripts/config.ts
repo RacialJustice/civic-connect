@@ -2,10 +2,20 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '../shared/schema';
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_KEY || '';
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase environment variables:');
+  console.error('VITE_SUPABASE_URL:', supabaseUrl ? 'Present' : 'Missing');
+  console.error('VITE_SUPABASE_ANON_KEY:', supabaseKey ? 'Present' : 'Missing');
+  throw new Error('Missing required Supabase configuration. Please check your environment variables.');
+}
+
+const supabase = createClient<Database>(
+  supabaseUrl,
+  supabaseKey
+);
 
 async function createTables() {
   const { error } = await supabase.rpc('exec_sql', {
