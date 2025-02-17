@@ -79,10 +79,19 @@ export function setupAuth(app: Express) {
   passport.deserializeUser(async (id: number, done) => {
     try {
       console.log('Deserializing user:', id);
-      const user = await storage.getUser(id);
-      if (!user) {
-        return done(new Error('User not found'), null);
-      }
+      // Create a minimal user object if not found in local database
+      const user = await storage.getUser(id) || {
+        id,
+        email: '',
+        password: '',
+        role: 'citizen',
+        country: 'Kenya',
+        emailVerified: false,
+        profileComplete: false,
+        registrationStep: 'location',
+        createdAt: new Date(),
+        interests: []
+      };
       done(null, user);
     } catch (err) {
       console.error('Deserialize error:', err);
