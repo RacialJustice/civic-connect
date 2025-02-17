@@ -37,17 +37,70 @@ async function migrateTable<T extends Record<string, any>>(tableName: string, da
     const batchSize = 100;
     for (let i = 0; i < data.length; i += batchSize) {
       const batch = data.slice(i, i + batchSize);
-      const { error } = await supabase.from(tableName).upsert(
-        batch.map(record => ({
-          ...record,
-          created_at: record.createdAt,
-          updated_at: record.updatedAt,
-        }))
-      );
 
-      if (error) {
-        console.error(`Error migrating ${tableName} batch ${i / batchSize + 1}:`, JSON.stringify(error, null, 2));
-        throw error;
+      // For users table, we need to handle auth separately
+      if (tableName === 'users') {
+        for (const user of batch) {
+          // First create the auth user
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: user.email,
+            password: 'TempPass123!', // Temporary password, users will need to reset
+            options: {
+              data: {
+                name: user.name,
+                role: user.role,
+                village: user.village,
+                ward: user.ward,
+                constituency: user.constituency,
+                county: user.county,
+                country: user.country,
+              },
+            },
+          });
+
+          if (authError) {
+            console.error('Auth creation error:', authError);
+            continue;
+          }
+
+          // Then create the profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: authData.user!.id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              village: user.village,
+              ward: user.ward,
+              constituency: user.constituency,
+              county: user.county,
+              country: user.country,
+              profile_complete: user.profile_complete,
+              created_at: user.created_at || new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+          }
+        }
+      } else {
+        // For other tables, use standard upsert
+        const { error } = await supabase
+          .from(tableName)
+          .upsert(
+            batch.map(record => ({
+              ...record,
+              created_at: record.created_at || new Date().toISOString(),
+              updated_at: record.updated_at || new Date().toISOString(),
+            }))
+          );
+
+        if (error) {
+          console.error(`Error migrating ${tableName} batch ${i / batchSize + 1}:`, error);
+          throw error;
+        }
       }
       console.log(`Successfully migrated batch ${i / batchSize + 1} of ${Math.ceil(data.length / batchSize)} for ${tableName}`);
     }
@@ -66,8 +119,15 @@ async function migrate() {
     console.log('PostgreSQL connection successful');
 
     console.log('Verifying Supabase connection...');
-    const { data: testData, error: testError } = await supabase.from('users').select('*').limit(1);
-    if (testError) throw new Error(`Supabase connection test failed: ${testError.message}`);
+    const { data: testData, error: testError } = await supabase
+      .from('profiles')
+      .select('id')
+      .limit(1);
+
+    if (testError) {
+      console.error('Supabase test error details:', testError);
+      throw new Error(`Supabase connection test failed: ${testError.message}`);
+    }
     console.log('Supabase connection successful');
 
     // Start migration
