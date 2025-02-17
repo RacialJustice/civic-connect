@@ -280,6 +280,21 @@ export const selectVotingRecordSchema = createSelectSchema(votingRecords);
 export const insertDevelopmentProjectSchema = createInsertSchema(developmentProjects);
 export const selectDevelopmentProjectSchema = createSelectSchema(developmentProjects);
 
+export const feedbacks = pgTable("feedbacks", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  leaderId: integer("leader_id").notNull().references(() => officials.id),
+  content: text("content").notNull(),
+  rating: integer("rating"),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+export const insertFeedbackSchema = createInsertSchema(feedbacks);
+export const selectFeedbackSchema = createSelectSchema(feedbacks);
+
+export type InsertFeedback = typeof feedbacks.$inferInsert;
+export type SelectFeedback = typeof feedbacks.$inferSelect;
+
 // Types
 export type InsertUser = typeof users.$inferInsert;
 export type SelectUser = typeof users.$inferSelect;

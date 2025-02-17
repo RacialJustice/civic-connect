@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertFeedbackSchema } from "@shared/schema";
+import { insertFeedbackSchema, type InsertFeedback } from "@shared/schema";
 
 // Maintain a list of connected clients
 const clients = new Map<WebSocket, { userId: number, username: string }>();
