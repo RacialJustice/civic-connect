@@ -22,11 +22,7 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        try {
-          logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-        } catch (err) {
-          logLine += ' :: [Response contains circular references]';
-        }
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
       if (logLine.length > 80) {
@@ -64,6 +60,6 @@ app.use((req, res, next) => {
   // this serves both the API and the client
   const PORT = 5000;
   server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT} (http://0.0.0.0:${PORT})`);
+    log(`serving on port ${PORT}`);
   });
 })();

@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { type Database } from '@shared/schema';
 
@@ -12,7 +11,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing required Supabase configuration. Please check your environment variables.');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -20,3 +19,5 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     storageKey: 'supabase.auth.token',
   }
 });
+
+export { supabase };

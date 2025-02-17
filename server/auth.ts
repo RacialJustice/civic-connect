@@ -1,14 +1,32 @@
-import { createClient } from '@supabase/supabase-js';
 import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 import { storage } from "./storage";
+import { type SelectUser } from "@shared/schema";
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-  throw new Error("Missing Supabase environment variables");
+declare global {
+  namespace Express {
+    interface User extends SelectUser {}
+  }
 }
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
+async function comparePasswords(supplied: string, stored: string) {
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
+  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  return timingSafeEqual(hashedBuf, suppliedBuf);
+}
 
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
@@ -17,8 +35,8 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      secure: false,
-      maxAge: 24 * 60 * 60 * 1000,
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   };
 
@@ -26,37 +44,97 @@ export function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  passport.serializeUser((user: any, done) => {
+  passport.use(
+    new LocalStrategy(
+      { usernameField: 'email' },
+      async (email, password, done) => {
+        try {
+          const user = await storage.getUserByEmail(email);
+          if (!user) {
+            console.log('Login failed: User not found:', email);
+            return done(null, false, { message: "Invalid email or password" });
+          }
+
+          const isValid = await comparePasswords(password, user.password);
+          if (!isValid) {
+            console.log('Login failed: Invalid password for user:', email);
+            return done(null, false, { message: "Invalid email or password" });
+          }
+
+          console.log('Login successful for user:', email);
+          return done(null, user);
+        } catch (err) {
+          console.error('Login error:', err);
+          return done(err);
+        }
+      }
+    )
+  );
+
+  passport.serializeUser((user, done) => {
+    console.log('Serializing user:', user.id);
     done(null, user.id);
   });
 
-  passport.deserializeUser(async (id: string, done) => {
+  passport.deserializeUser(async (id: number, done) => {
     try {
-      const { data: user, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      if (!user) return done(null, false);
-
+      console.log('Deserializing user:', id);
+      const user = await storage.getUser(id);
       done(null, user);
     } catch (err) {
+      console.error('Deserialize error:', err);
       done(err);
     }
   });
 
-  app.get("/api/user", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.sendStatus(401);
+  app.post("/api/register", async (req, res, next) => {
+    try {
+      const existingUser = await storage.getUserByEmail(req.body.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+
+      const hashedPassword = await hashPassword(req.body.password);
+      const user = await storage.createUser({
+        ...req.body,
+        password: hashedPassword,
+      });
+
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(201).json(user);
+      });
+    } catch (err) {
+      next(err);
     }
-    res.json(req.user);
   });
+
+  app.post("/api/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) return next(err);
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+      }
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.json(user);
+      });
+    })(req, res, next);
+  });
+
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
       res.sendStatus(200);
     });
+  });
+
+  app.get("/api/user", (req, res) => {
+    if (!req.isAuthenticated()) {
+      console.log('User not authenticated');
+      return res.sendStatus(401);
+    }
+    console.log('Returning authenticated user:', req.user);
+    res.json(req.user);
   });
 }
