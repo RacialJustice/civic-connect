@@ -76,10 +76,17 @@ export function setupAuth(app: Express) {
     done(null, user.id);
   });
 
+  // Simple in-memory cache for deserialized users
+  const userCache = new Map<number, any>();
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
   passport.deserializeUser(async (id: number, done) => {
     try {
-      console.log('Deserializing user:', id);
-      // Create a minimal user object if not found in local database
+      const cachedUser = userCache.get(id);
+      if (cachedUser) {
+        return done(null, cachedUser);
+      }
+
       const user = await storage.getUser(id) || {
         id,
         email: '',
@@ -92,6 +99,9 @@ export function setupAuth(app: Express) {
         createdAt: new Date(),
         interests: []
       };
+      
+      userCache.set(id, user);
+      setTimeout(() => userCache.delete(id), CACHE_TTL);
       done(null, user);
     } catch (err) {
       console.error('Deserialize error:', err);
