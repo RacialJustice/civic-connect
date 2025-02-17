@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { ErrorBoundary } from "@/components/error-boundary";
 
 type Leader = {
   id: number;
@@ -54,23 +53,27 @@ export function LeadersList() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <h1 className="text-4xl font-bold">Your Local Leaders</h1>
       {leaders.map((leader) => (
         <Card key={leader.id} className="w-full">
           <CardHeader>
-            <CardTitle>{leader.name}</CardTitle>
-            <p className="text-sm text-muted-foreground">{leader.role}</p>
+            <div className="flex flex-col gap-1">
+              <CardTitle className="text-2xl">{leader.name}</CardTitle>
+              <p className="text-lg text-muted-foreground">
+                {leader.role} - {leader.constituency || leader.county}
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <p className="text-sm">Party: {leader.party}</p>
-              {leader.constituency && (
-                <p className="text-sm">Constituency: {leader.constituency}</p>
-              )}
-              {leader.county && (
-                <p className="text-sm">County: {leader.county}</p>
-              )}
-              <Button variant="secondary">Send Feedback</Button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Position</p>
+                  <p>{leader.position || leader.role}</p>
+                </div>
+                <Button variant="outline">Send Feedback</Button>
+              </div>
             </div>
           </CardContent>
         </Card>
