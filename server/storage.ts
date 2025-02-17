@@ -1,12 +1,51 @@
 import { type InsertUser, type SelectUser, type SelectFeedback, type InsertFeedback, type SelectOfficial, type SelectCommunity, type SelectForum, type SelectParliamentarySession, type SelectDevelopmentProject, type SelectPost, type InsertPost, type InsertForumModerator, type SelectForumModerator, type InsertForumMember, type SelectForumMember, type InsertEmergencyService, type SelectEmergencyService, users, feedbacks, officials, communities, forums, parliamentarySessions, developmentProjects, posts, forumModerators, forumMembers, emergencyServices } from "@shared/schema";
 import { db } from "./db";
-import { eq, inArray, and, or } from "drizzle-orm";
+import { eq, inArray, and, or, sql } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
 const PostgresSessionStore = connectPg(session);
+
+export interface IStorage {
+  sessionStore: session.Store;
+  getUser(id: number): Promise<SelectUser | undefined>;
+  getUserByEmail(email: string): Promise<SelectUser | undefined>;
+  createUser(user: InsertUser): Promise<SelectUser>;
+  getLeaders(params: { ward?: string; constituency?: string; county?: string }): Promise<SelectUser[]>;
+  getFeedbackForLeader(leaderId: number): Promise<SelectFeedback[]>;
+  createFeedback(userId: number, feedback: InsertFeedback): Promise<SelectFeedback>;
+  searchOfficials(term: string, location: string): Promise<SelectOfficial[]>;
+  searchCommunities(term: string, location: string): Promise<SelectCommunity[]>;
+  searchForums(term: string, category: string): Promise<SelectForum[]>;
+  searchParliamentarySessions(term: string, type: string): Promise<SelectParliamentarySession[]>;
+  searchDevelopmentProjects(term: string, location: string, status: string): Promise<SelectDevelopmentProject[]>;
+  updateUserLocation(userId: number, update: { ward: string; constituency: string; county: string; village?: string }): Promise<SelectUser>;
+  updateUserProfile(userId: number, update: { name?: string; email?: string; village?: string | null; ward?: string | null; constituency?: string | null; county?: string | null }): Promise<SelectUser>;
+  getUserActivity(userId: number): Promise<any[]>;
+  getForum(forumId: number): Promise<SelectForum | undefined>;
+  getForumPosts(forumId: number): Promise<SelectPost[]>;
+  createPost(post: InsertPost): Promise<SelectPost>;
+  upsertVote(vote: { postId: number; userId: number; type: string }): Promise<void>;
+  updateRegistrationStep(userId: number, step: string): Promise<SelectUser>;
+  completeUserProfile(userId: number): Promise<SelectUser>;
+  getLocalOfficials(location: { village?: string; ward?: string; constituency?: string; county?: string }): Promise<SelectOfficial[]>;
+  getWomenRepresentative(county: string): Promise<SelectOfficial | undefined>;
+  getSenator(county: string): Promise<SelectOfficial | undefined>;
+  getMemberOfParliament(constituency: string): Promise<SelectOfficial | undefined>;
+  getForumsByLocation(location: { village?: string; ward?: string; constituency?: string; county?: string }): Promise<SelectForum[]>;
+  addForumModerator(moderator: InsertForumModerator): Promise<SelectForumModerator>;
+  getForumModerators(forumId: number): Promise<SelectForumModerator[]>;
+  joinForum(member: InsertForumMember): Promise<SelectForumMember>;
+  getForumMembers(forumId: number): Promise<SelectForumMember[]>;
+  isUserForumModerator(userId: number, forumId: number): Promise<boolean>;
+  getEmergencyServices(filters: { type?: string; village?: string; ward?: string; constituency?: string; county?: string }): Promise<SelectEmergencyService[]>;
+  getEmergencyServiceById(id: number): Promise<SelectEmergencyService | undefined>;
+  createEmergencyService(service: InsertEmergencyService): Promise<SelectEmergencyService>;
+  updateEmergencyServiceStatus(id: number, status: string, updatedBy: number): Promise<SelectEmergencyService>;
+  verifyEmergencyService(id: number, verifiedBy: number): Promise<SelectEmergencyService>;
+}
 
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
@@ -34,11 +73,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLeaders({ ward, constituency, county }: { ward?: string; constituency?: string; county?: string }): Promise<SelectUser[]> {
-    let query = db.select().from(users).where(eq(users.role, 'leader'));
-    if (ward) query = query.where(eq(users.ward, ward));
-    if (constituency) query = query.where(eq(users.constituency, constituency));
-    if (county) query = query.where(eq(users.county, county));
-    return query;
+    const query = db.select().from(users);
+
+    const conditions = [];
+    conditions.push(sql`${users.role} = 'leader'`);
+
+    if (ward) conditions.push(sql`${users.ward} = ${ward}`);
+    if (constituency) conditions.push(sql`${users.constituency} = ${constituency}`);
+    if (county) conditions.push(sql`${users.county} = ${county}`);
+
+    return query.where(and(...conditions));
   }
 
   async getFeedbackForLeader(leaderId: number): Promise<SelectFeedback[]> {
@@ -51,28 +95,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchOfficials(term: string, location: string): Promise<SelectOfficial[]> {
-    const normalizedTerm = term.toLowerCase();
-    const normalizedLocation = location.toLowerCase();
+    const normalizedTerm = `%${term.toLowerCase()}%`;
+    const normalizedLocation = `%${location.toLowerCase()}%`;
 
-    return db.select().from(officials).where(
-      or(
-        eq(officials.name, term),
-        eq(officials.role, term),
-        eq(officials.party, term),
-        officials.name.like(`%${normalizedTerm}%`),
-        officials.role.like(`%${normalizedTerm}%`),
-        officials.party.like(`%${normalizedTerm}%`)
-      )
-    ).where(
-      or(
-          eq(officials.ward, location),
-          eq(officials.constituency, location),
-          eq(officials.county, location),
-          officials.ward.like(`%${normalizedLocation}%`),
-          officials.constituency.like(`%${normalizedLocation}%`),
-          officials.county.like(`%${normalizedLocation}%`)
-      )
-    );
+    return db.select()
+      .from(officials)
+      .where(
+        and(
+          or(
+            sql`LOWER(${officials.name}) LIKE ${normalizedTerm}`,
+            sql`LOWER(${officials.role}) LIKE ${normalizedTerm}`,
+            sql`LOWER(${officials.party}) LIKE ${normalizedTerm}`
+          ),
+          or(
+            sql`LOWER(${officials.ward}) LIKE ${normalizedLocation}`,
+            sql`LOWER(${officials.constituency}) LIKE ${normalizedLocation}`,
+            sql`LOWER(${officials.county}) LIKE ${normalizedLocation}`
+          )
+        )
+      );
   }
 
   async searchCommunities(term: string, location: string): Promise<SelectCommunity[]> {
@@ -129,7 +170,7 @@ export class DatabaseStorage implements IStorage {
     );
   }
 
-  async updateUserLocation(userId: number, update: { ward: string; constituency: string; county: string }): Promise<SelectUser> {
+  async updateUserLocation(userId: number, update: { ward: string; constituency: string; county: string; village?: string }): Promise<SelectUser> {
     const [updatedUser] = await db.update(users).set(update).where(eq(users.id, userId)).returning();
     return updatedUser;
   }

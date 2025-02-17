@@ -4,7 +4,6 @@ import { WebSocketServer, WebSocket } from "ws";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertFeedbackSchema } from "@shared/schema";
-import { getCountyByConstituency, validateWardInConstituency } from "@shared/constants";
 import type { IncomingMessage } from "http";
 import type { SelectUser } from "@shared/schema";
 import { 
