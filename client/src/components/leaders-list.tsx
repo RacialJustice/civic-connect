@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 type Leader = {
@@ -11,6 +11,7 @@ type Leader = {
   level: 'national' | 'county' | 'constituency' | 'ward';
   position: string;
   party: string;
+  email: string | null;
   constituency?: string;
   county?: string;
 };
@@ -75,9 +76,19 @@ export function LeadersList() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Position</p>
-                  <p>{leader.position || leader.role}</p>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Position</p>
+                    <p>{leader.position || leader.role}</p>
+                  </div>
+                  {leader.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <a href={`mailto:${leader.email}`} className="text-sm hover:underline">
+                        {leader.email}
+                      </a>
+                    </div>
+                  )}
                 </div>
                 <Button variant="outline">Send Feedback</Button>
               </div>
