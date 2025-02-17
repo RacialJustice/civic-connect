@@ -23,16 +23,39 @@ type Forum = {
 
 export default function ForumsPage() {
   const { user } = useAuth();
-  const { data: forums = [] } = useQuery<Forum[]>({
-    queryKey: ["forums"],
+  const { data: forums = [], isLoading } = useQuery<Forum[]>({
+    queryKey: ["forums", "ward"],
     queryFn: async () => {
-      const res = await fetch("/api/forums");
+      if (!user) throw new Error("User not authenticated");
+      const res = await fetch("/api/forums/ward", {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
       if (!res.ok) {
         throw new Error("Failed to fetch forums");
       }
       return res.json();
     },
+    enabled: !!user,
   });
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Please sign in to view forums</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Loading forums...</p>
+      </div>
+    );
+  }
 
   const filterForumsByLevel = (level: string) => {
     return forums?.filter((forum) => {
