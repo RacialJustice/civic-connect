@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,6 +23,7 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("login");
+  const [, setLocation] = useLocation();
 
   const loginForm = useForm({
     defaultValues: {
@@ -45,6 +47,15 @@ export default function AuthPage() {
       interests: [],
     },
   });
+
+  const handleLoginSubmit = async (data: any) => {
+    try {
+      await loginMutation.mutateAsync(data);
+      setLocation("/");
+    } catch (error) {
+      // Error handling is already done in the mutation
+    }
+  };
 
   const handleRegisterSubmit = async (data: any) => {
     try {
@@ -84,9 +95,7 @@ export default function AuthPage() {
               </CardHeader>
               <CardContent>
                 <form
-                  onSubmit={loginForm.handleSubmit((data) =>
-                    loginMutation.mutate(data)
-                  )}
+                  onSubmit={loginForm.handleSubmit(handleLoginSubmit)}
                   className="space-y-4"
                 >
                   <div className="space-y-2">
