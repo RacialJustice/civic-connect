@@ -50,10 +50,16 @@ export default function AuthPage() {
 
   const handleLoginSubmit = async (data: any) => {
     try {
-      await loginMutation.mutateAsync(data);
-      setLocation("/");
+      const user = await loginMutation.mutateAsync(data);
+      if (user) {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        setLocation("/");
+      }
     } catch (error) {
-      // Error handling is already done in the mutation
+      // Error handling is done in the mutation
     }
   };
 

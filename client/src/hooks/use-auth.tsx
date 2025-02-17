@@ -26,7 +26,16 @@ function useLoginMutation() {
         password,
       });
       if (error) throw error;
-      return data.user;
+
+      // After successful auth, fetch the user data from our users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+      if (userError) throw userError;
+      return userData;
     },
     onError: (error: Error) => {
       toast({
