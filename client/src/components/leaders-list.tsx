@@ -26,6 +26,13 @@ type LeadersByLevel = {
 function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] }) {
   if (leaders.length === 0) return null;
 
+  const formatLeaderName = (name: string) => {
+    // Ensure name parts are properly capitalized
+    return name.split(' ')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   return (
     <div className="mb-8">
       <h2 className="text-xl font-semibold mb-4">{title}</h2>
@@ -34,7 +41,7 @@ function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] })
           <Card key={leader.id}>
             <CardHeader>
               <div className="flex flex-col gap-1">
-                <CardTitle className="text-lg font-bold">{leader.name}</CardTitle>
+                <CardTitle className="text-lg font-bold">{formatLeaderName(leader.name)}</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   {leader.role === "MP" || leader.role === "legislative" ? "Member of Parliament" : leader.role} - {leader.party}
                 </p>
