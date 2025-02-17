@@ -23,15 +23,12 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
-<<<<<<< HEAD
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
     allowedHosts: true,
   };
 
-=======
->>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
   const vite = await createViteServer({
     ...viteConfig,
     configFile: false,
@@ -42,14 +39,7 @@ export async function setupVite(app: Express, server: Server) {
         process.exit(1);
       },
     },
-<<<<<<< HEAD
     server: serverOptions,
-=======
-    server: {
-      middlewareMode: true,
-      hmr: { server },
-    },
->>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
     appType: "custom",
   });
 
@@ -67,14 +57,10 @@ export async function setupVite(app: Express, server: Server) {
 
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
-<<<<<<< HEAD
       template = template.replace(
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`,
       );
-=======
-      template = template.replace(`src="/src/main.tsx"`, `src="/src/main.tsx?v=${nanoid()}"`)
->>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {

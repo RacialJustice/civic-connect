@@ -1,14 +1,6 @@
 {
   "variant": "professional",
-<<<<<<< HEAD
   "primary": "hsl(222.2 47.4% 11.2%)",
   "appearance": "light",
   "radius": 0.5
 }
-=======
-  "primary": "#006600",
-  "accent": "#000000",
-  "appearance": "dark",
-  "radius": 0.75
-}
->>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
