@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
 type LocationFormData = {
+  village: string;
   ward: string;
   constituency: string;
 };
@@ -21,6 +22,7 @@ export function LocationForm() {
 
   const form = useForm<LocationFormData>({
     defaultValues: {
+      village: user?.village || "",
       ward: user?.ward || "",
       constituency: user?.constituency || "",
     },
@@ -54,6 +56,15 @@ export function LocationForm() {
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
+        <Label htmlFor="village">Village</Label>
+        <Input
+          id="village"
+          {...form.register("village")}
+          placeholder="Enter your village"
+        />
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="ward">Ward</Label>
         <Input
           id="ward"
@@ -61,7 +72,7 @@ export function LocationForm() {
           placeholder="Enter your ward"
         />
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="constituency">Constituency</Label>
         <Input
