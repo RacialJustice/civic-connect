@@ -105,6 +105,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(user);
   });
 
+  app.patch("/api/user/profile", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    const { name, email, village, ward, constituency } = req.body;
+    try {
+      const user = await storage.updateUserProfile(req.user!.id, {
+        name,
+        email,
+        village,
+        ward,
+        constituency
+      });
+      res.json(user);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Failed to update profile" });
+    }
+  });
+
+  app.get("/api/user/activity", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const activity = await storage.getUserActivity(req.user!.id);
+      res.json(activity);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Failed to fetch user activity" });
+    }
+  });
+
+  app.get("/api/forums/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    const forumId = parseInt(req.params.id);
+    const forum = await storage.getForum(forumId);
+
+    if (!forum) {
+      return res.status(404).json({ error: "Forum not found" });
+    }
+
+    res.json(forum);
+  });
+
+  app.get("/api/forums/:id/posts", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    const forumId = parseInt(req.params.id);
+    const posts = await storage.getForumPosts(forumId);
+    res.json(posts);
+  });
+
+  app.post("/api/forums/:id/posts", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    const forumId = parseInt(req.params.id);
+    const post = await storage.createPost({
+      ...req.body,
+      forumId,
+      authorId: req.user!.id,
+    });
+
+    res.status(201).json(post);
+  });
+
+  app.post("/api/forums/:forumId/posts/:postId/vote", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    const postId = parseInt(req.params.postId);
+    const { type } = req.body;
+
+    await storage.upsertVote({
+      postId,
+      userId: req.user!.id,
+      type,
+    });
+
+    const posts = await storage.getForumPosts(parseInt(req.params.forumId));
+    res.json(posts);
+  });
+
   const httpServer = createServer(app);
 
   // Initialize WebSocket server
