@@ -58,6 +58,37 @@ export interface IStorage {
   getWomenRepresentative(county: string): Promise<SelectOfficial | undefined>;
   getSenator(county: string): Promise<SelectOfficial | undefined>;
   getMemberOfParliament(constituency: string): Promise<SelectOfficial | undefined>;
+  // Add new forum management methods
+  getForumsByLocation(location: {
+    village?: string;
+    ward?: string;
+    constituency?: string;
+    county?: string;
+  }): Promise<SelectForum[]>;
+  addForumModerator(moderator: InsertForumModerator): Promise<SelectForumModerator>;
+  getForumModerators(forumId: number): Promise<SelectForumModerator[]>;
+  joinForum(member: InsertForumMember): Promise<SelectForumMember>;
+  getForumMembers(forumId: number): Promise<SelectForumMember[]>;
+  isUserForumModerator(userId: number, forumId: number): Promise<boolean>;
+  // Emergency services methods
+  getEmergencyServices(filters: {
+    type?: string;
+    village?: string;
+    ward?: string;
+    constituency?: string;
+    county?: string;
+  }): Promise<SelectEmergencyService[]>;
+  getEmergencyServiceById(id: number): Promise<SelectEmergencyService | undefined>;
+  createEmergencyService(service: InsertEmergencyService): Promise<SelectEmergencyService>;
+  updateEmergencyServiceStatus(
+    id: number,
+    status: string,
+    updatedBy: number
+  ): Promise<SelectEmergencyService>;
+  verifyEmergencyService(
+    id: number,
+    verifiedBy: number
+  ): Promise<SelectEmergencyService>;
 }
 
 export interface Feedback extends InsertFeedback {
@@ -80,6 +111,10 @@ export class MemStorage implements IStorage {
   private posts: Map<number, SelectPost>;
   private votes: Map<string, { postId: number; userId: number; type: string; id: string; createdAt: Date }>;
   sessionStore: session.Store;
+  // Add new private maps
+  private forumModerators: Map<number, SelectForumModerator>;
+  private forumMembers: Map<number, SelectForumMember>;
+  private emergencyServices: Map<number, SelectEmergencyService>;
 
   constructor() {
     this.users = new Map();
@@ -96,6 +131,9 @@ export class MemStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
+    this.forumModerators = new Map();
+    this.forumMembers = new Map();
+    this.emergencyServices = new Map();
 
     // Initialize with test data
     this.initializeTestData();
@@ -317,6 +355,59 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.officials.set(senator.id, senator);
+
+    // Add some test emergency services
+    const police: SelectEmergencyService = {
+      id: 1,
+      name: "Kiambu Police Station",
+      type: "police",
+      phoneNumbers: ["+254722000000", "999"],
+      description: "Main police station serving Kiambu area",
+      address: "Kiambu Road, Next to County Offices",
+      operatingHours: "24/7",
+      village: null,
+      ward: "Township",
+      constituency: "Kiambu",
+      county: "Kiambu",
+      latitude: "-1.1710",
+      longitude: "36.8283",
+      isVerified: true,
+      verifiedBy: adminUser.id,
+      status: "active",
+      additionalInfo: {
+        services: ["Criminal Reporting", "Traffic Services", "Public Security"],
+        facilities: ["Holding Cells", "Public Desk", "Parking"]
+      },
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.emergencyServices.set(police.id, police);
+
+    const hospital: SelectEmergencyService = {
+      id: 2,
+      name: "Kiambu Level 5 Hospital",
+      type: "hospital",
+      phoneNumbers: ["+254733000000", "0800723723"],
+      description: "Major referral hospital in Kiambu County",
+      address: "Hospital Road, Kiambu",
+      operatingHours: "24/7",
+      village: null,
+      ward: "Township",
+      constituency: "Kiambu",
+      county: "Kiambu",
+      latitude: "-1.1715",
+      longitude: "36.8290",
+      isVerified: true,
+      verifiedBy: adminUser.id,
+      status: "active",
+      additionalInfo: {
+        services: ["Emergency Care", "Maternity", "Surgery", "Outpatient"],
+        facilities: ["Emergency Room", "ICU", "Ambulance Services"]
+      },
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.emergencyServices.set(hospital.id, hospital);
   }
 
   async getUser(id: number): Promise<SelectUser | undefined> {
@@ -655,6 +746,129 @@ export class MemStorage implements IStorage {
         official.houseType === "lower_house" &&
         official.status === "active"
     );
+  }
+
+  async getForumsByLocation(location: {
+    village?: string;
+    ward?: string;
+    constituency?: string;
+    county?: string;
+  }): Promise<SelectForum[]> {
+    return Array.from(this.forums.values()).filter(forum => {
+      if (location.village && forum.village === location.village) return true;
+      if (location.ward && forum.ward === location.ward) return true;
+      if (location.constituency && forum.constituency === location.constituency) return true;
+      if (location.county && forum.county === location.county) return true;
+      return false;
+    });
+  }
+
+  async addForumModerator(moderator: InsertForumModerator): Promise<SelectForumModerator> {
+    const id = this.forumModerators.size + 1;
+    const newModerator: SelectForumModerator = {
+      ...moderator,
+      id,
+      createdAt: new Date(),
+    };
+    this.forumModerators.set(id, newModerator);
+    return newModerator;
+  }
+
+  async getForumModerators(forumId: number): Promise<SelectForumModerator[]> {
+    return Array.from(this.forumModerators.values())
+      .filter(mod => mod.forumId === forumId);
+  }
+
+  async joinForum(member: InsertForumMember): Promise<SelectForumMember> {
+    const id = this.forumMembers.size + 1;
+    const newMember: SelectForumMember = {
+      ...member,
+      id,
+      createdAt: new Date(),
+    };
+    this.forumMembers.set(id, newMember);
+    return newMember;
+  }
+
+  async getForumMembers(forumId: number): Promise<SelectForumMember[]> {
+    return Array.from(this.forumMembers.values())
+      .filter(member => member.forumId === forumId);
+  }
+
+  async isUserForumModerator(userId: number, forumId: number): Promise<boolean> {
+    return Array.from(this.forumModerators.values())
+      .some(mod => mod.userId === userId && mod.forumId === forumId);
+  }
+
+  async getEmergencyServices(filters: {
+    type?: string;
+    village?: string;
+    ward?: string;
+    constituency?: string;
+    county?: string;
+  }): Promise<SelectEmergencyService[]> {
+    return Array.from(this.emergencyServices.values()).filter(service => {
+      if (filters.type && service.type !== filters.type) return false;
+      if (filters.village && service.village !== filters.village) return false;
+      if (filters.ward && service.ward !== filters.ward) return false;
+      if (filters.constituency && service.constituency !== filters.constituency) return false;
+      if (filters.county && service.county !== filters.county) return false;
+      return true;
+    });
+  }
+
+  async getEmergencyServiceById(id: number): Promise<SelectEmergencyService | undefined> {
+    return this.emergencyServices.get(id);
+  }
+
+  async createEmergencyService(service: InsertEmergencyService): Promise<SelectEmergencyService> {
+    const id = this.emergencyServices.size + 1;
+    const newService: SelectEmergencyService = {
+      ...service,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.emergencyServices.set(id, newService);
+    return newService;
+  }
+
+  async updateEmergencyServiceStatus(
+    id: number,
+    status: string,
+    updatedBy: number
+  ): Promise<SelectEmergencyService> {
+    const service = await this.getEmergencyServiceById(id);
+    if (!service) {
+      throw new Error("Emergency service not found");
+    }
+
+    const updatedService: SelectEmergencyService = {
+      ...service,
+      status,
+      updatedAt: new Date(),
+    };
+    this.emergencyServices.set(id, updatedService);
+    return updatedService;
+  }
+
+  async verifyEmergencyService(
+    id: number,
+    verifiedBy: number
+  ): Promise<SelectEmergencyService> {
+    const service = await this.getEmergencyServiceById(id);
+    if (!service) {
+      throw new Error("Emergency service not found");
+    }
+
+    const verifiedService: SelectEmergencyService = {
+      ...service,
+      isVerified: true,
+      verifiedBy,
+      updatedAt: new Date(),
+    };
+    this.emergencyServices.set(id, verifiedService);
+    return verifiedService;
   }
 }
 

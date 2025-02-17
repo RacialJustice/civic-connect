@@ -79,11 +79,13 @@ export const forums = pgTable("forums", {
   name: text("name").notNull(),
   description: text("description").notNull(),
   category: text("category").notNull(),
-  level: text("level").notNull(),
+  level: text("level").notNull(), // village, ward, constituency, county, national
   village: text("village"),
   ward: text("ward"),
   constituency: text("constituency"),
   county: text("county"),
+  moderationEnabled: boolean("moderation_enabled").default(true).notNull(),
+  membershipType: text("membership_type").default("public").notNull(), // public, request, invite
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -173,6 +175,130 @@ export const developmentProjects = pgTable("development_projects", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const forumModerators = pgTable("forum_moderators", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  forumId: integer("forum_id").notNull().references(() => forums.id),
+  level: text("level").notNull(), // village, ward, constituency, county
+  permissions: jsonb("permissions").default('["moderate_posts", "delete_comments"]').notNull(),
+  appointed_by: integer("appointed_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const forumMembers = pgTable("forum_members", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  forumId: integer("forum_id").notNull().references(() => forums.id),
+  role: text("role").default("member").notNull(), // member, contributor
+  status: text("status").default("active").notNull(), // active, pending, banned
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  type: text("type").notNull(), // townhall, community_meeting, public_participation
+  format: text("format").notNull(), // hybrid, physical, virtual
+  status: text("status").default("upcoming").notNull(), // upcoming, ongoing, completed, cancelled
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time"),
+  location: text("location"), // Physical location if applicable
+  virtualLink: text("virtual_link"), // Meeting link if virtual/hybrid
+  organizerId: integer("organizer_id").notNull().references(() => users.id),
+  forumId: integer("forum_id").references(() => forums.id), // Optional forum association
+  village: text("village"),
+  ward: text("ward"),
+  constituency: text("constituency"),
+  county: text("county"),
+  maxAttendees: integer("max_attendees"),
+  requiresRegistration: boolean("requires_registration").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const eventAttendance = pgTable("event_attendance", {
+  id: serial("id").primaryKey(),
+  eventId: integer("event_id").notNull().references(() => events.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  status: text("status").notNull(), // registered, attended, absent
+  attendanceTime: timestamp("attendance_time"), // When they actually attended
+  registrationTime: timestamp("registration_time").defaultNow(),
+  attendanceMode: text("attendance_mode"), // physical, virtual
+  verifiedBy: integer("verified_by").references(() => users.id), // Moderator who verified attendance
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const whatsappNotifications = pgTable("whatsapp_notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  phoneNumber: text("phone_number").notNull(),
+  isVerified: boolean("is_verified").default(false).notNull(),
+  verificationCode: text("verification_code"),
+  verificationExpiry: timestamp("verification_expiry"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  forumId: integer("forum_id").references(() => forums.id),
+  eventNotifications: boolean("event_notifications").default(true).notNull(),
+  forumPostNotifications: boolean("forum_post_notifications").default(true).notNull(),
+  urgentAlerts: boolean("urgent_alerts").default(true).notNull(),
+  leaderUpdates: boolean("leader_updates").default(true).notNull(),
+  whatsappEnabled: boolean("whatsapp_enabled").default(false).notNull(),
+  emailEnabled: boolean("email_enabled").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const feedbacks = pgTable("feedbacks", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  leaderId: integer("leader_id").notNull().references(() => officials.id),
+  content: text("content").notNull(),
+  rating: integer("rating"),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+
+export const emergencyServices = pgTable("emergency_services", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // police, hospital, ambulance, fire, security
+  phoneNumbers: jsonb("phone_numbers").notNull(), // Array of contact numbers
+  description: text("description"),
+  address: text("address").notNull(),
+  operatingHours: text("operating_hours"),
+  village: text("village"),
+  ward: text("ward"),
+  constituency: text("constituency"),
+  county: text("county").notNull(),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  isVerified: boolean("is_verified").default(false).notNull(),
+  verifiedBy: integer("verified_by").references(() => users.id),
+  status: text("status").default("active").notNull(), // active, inactive, temporary_closed
+  additionalInfo: jsonb("additional_info").default('{}'),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Add to exports
+export const insertEmergencyServiceSchema = createInsertSchema(emergencyServices);
+export type InsertEmergencyService = typeof emergencyServices.$inferInsert;
+export type SelectEmergencyService = typeof emergencyServices.$inferSelect;
+
+// Add relations
+export const emergencyServiceRelations = relations(emergencyServices, ({ one }) => ({
+  verifier: one(users, {
+    fields: [emergencyServices.verifiedBy],
+    references: [users.id],
+  }),
+}));
+
+
 // Relations
 export const communitiesRelations = relations(communities, ({ one }) => ({
   parent: one(communities, {
@@ -183,6 +309,8 @@ export const communitiesRelations = relations(communities, ({ one }) => ({
 
 export const forumsRelations = relations(forums, ({ many }) => ({
   posts: many(posts),
+  moderators: many(forumModerators),
+  members: many(forumMembers),
 }));
 
 export const postsRelations = relations(posts, ({ one, many }) => ({
@@ -265,6 +393,31 @@ export const developmentProjectsRelations = relations(developmentProjects, ({ on
   }),
 }));
 
+export const forumModeratorRelations = relations(forumModerators, ({ one }) => ({
+  user: one(users, {
+    fields: [forumModerators.userId],
+    references: [users.id],
+  }),
+  forum: one(forums, {
+    fields: [forumModerators.forumId],
+    references: [forums.id],
+  }),
+  appointedBy: one(users, {
+    fields: [forumModerators.appointed_by],
+    references: [users.id],
+  }),
+}));
+
+export const forumMemberRelations = relations(forumMembers, ({ one }) => ({
+  user: one(users, {
+    fields: [forumMembers.userId],
+    references: [users.id],
+  }),
+  forum: one(forums, {
+    fields: [forumMembers.forumId],
+    references: [forums.id],
+  }),
+}));
 
 // Schemas
 export const insertOfficialSchema = createInsertSchema(officials);
@@ -279,20 +432,9 @@ export const insertAttendanceSchema = createInsertSchema(attendance);
 export const insertBillSchema = createInsertSchema(bills);
 export const insertVotingRecordSchema = createInsertSchema(votingRecords);
 export const insertDevelopmentProjectSchema = createInsertSchema(developmentProjects);
-
-export const feedbacks = pgTable("feedbacks", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  leaderId: integer("leader_id").notNull().references(() => officials.id),
-  content: text("content").notNull(),
-  rating: integer("rating"),
-  timestamp: timestamp("timestamp").defaultNow(),
-});
-
+export const insertForumModeratorSchema = createInsertSchema(forumModerators);
+export const insertForumMemberSchema = createInsertSchema(forumMembers);
 export const insertFeedbackSchema = createInsertSchema(feedbacks);
-
-export type InsertFeedback = typeof feedbacks.$inferInsert;
-export type SelectFeedback = typeof feedbacks.$inferSelect;
 
 // Types
 export type InsertOfficial = typeof officials.$inferInsert;
@@ -319,6 +461,12 @@ export type InsertVotingRecord = typeof votingRecords.$inferInsert;
 export type SelectVotingRecord = typeof votingRecords.$inferSelect;
 export type InsertDevelopmentProject = typeof developmentProjects.$inferInsert;
 export type SelectDevelopmentProject = typeof developmentProjects.$inferSelect;
+export type InsertForumModerator = typeof forumModerators.$inferInsert;
+export type SelectForumModerator = typeof forumModerators.$inferSelect;
+export type InsertForumMember = typeof forumMembers.$inferInsert;
+export type SelectForumMember = typeof forumMembers.$inferSelect;
+export type InsertFeedback = typeof feedbacks.$inferInsert;
+export type SelectFeedback = typeof feedbacks.$inferSelect;
 
 export const officialsRelations = relations(officials, ({ many }) => ({
   constituents: many(users),
@@ -333,4 +481,69 @@ export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
   votes: many(votes),
   comments: many(comments),
+  organizedEvents: many(events, { relationName: "organizer" }),
+  eventAttendance: many(eventAttendance),
+  whatsappNotifications: many(whatsappNotifications),
+  notificationPreferences: many(notificationPreferences),
+}));
+
+export const insertEventSchema = createInsertSchema(events);
+export const insertEventAttendanceSchema = createInsertSchema(eventAttendance);
+export const insertWhatsappNotificationSchema = createInsertSchema(whatsappNotifications);
+export const insertNotificationPreferenceSchema = createInsertSchema(notificationPreferences);
+
+// Add new types
+export type InsertEvent = typeof events.$inferInsert;
+export type SelectEvent = typeof events.$inferSelect;
+export type InsertEventAttendance = typeof eventAttendance.$inferInsert;
+export type SelectEventAttendance = typeof eventAttendance.$inferSelect;
+export type InsertWhatsappNotification = typeof whatsappNotifications.$inferInsert;
+export type SelectWhatsappNotification = typeof whatsappNotifications.$inferSelect;
+export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;
+export type SelectNotificationPreference = typeof notificationPreferences.$inferSelect;
+
+// Add relations for the new tables
+export const eventRelations = relations(events, ({ one, many }) => ({
+  organizer: one(users, {
+    fields: [events.organizerId],
+    references: [users.id],
+  }),
+  forum: one(forums, {
+    fields: [events.forumId],
+    references: [forums.id],
+  }),
+  attendees: many(eventAttendance),
+}));
+
+export const eventAttendanceRelations = relations(eventAttendance, ({ one }) => ({
+  event: one(events, {
+    fields: [eventAttendance.eventId],
+    references: [events.id],
+  }),
+  user: one(users, {
+    fields: [eventAttendance.userId],
+    references: [users.id],
+  }),
+  verifier: one(users, {
+    fields: [eventAttendance.verifiedBy],
+    references: [users.id],
+  }),
+}));
+
+export const whatsappNotificationRelations = relations(whatsappNotifications, ({ one }) => ({
+  user: one(users, {
+    fields: [whatsappNotifications.userId],
+    references: [users.id],
+  }),
+}));
+
+export const notificationPreferenceRelations = relations(notificationPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [notificationPreferences.userId],
+    references: [users.id],
+  }),
+  forum: one(forums, {
+    fields: [notificationPreferences.forumId],
+    references: [forums.id],
+  }),
 }));
