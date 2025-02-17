@@ -26,7 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/leaders", async (req, res) => {
     try {
-      const leaders = await storage.getLeaders({
+      const leaders = await storage.getLocalOfficials({
         ward: req.query.ward as string,
         constituency: req.query.constituency as string,
         county: req.query.county as string,
