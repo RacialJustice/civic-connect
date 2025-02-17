@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { 
   isValidCounty, 
@@ -48,6 +48,7 @@ export function LocationForm() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [county, setCounty] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const form = useForm<LocationFormData>({
     resolver: zodResolver(locationSchema),
@@ -75,20 +76,7 @@ export function LocationForm() {
         throw new Error("Invalid constituency");
       }
 
-      // Update auth user metadata
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          village: data.village,
-          ward: data.ward,
-          constituency: data.constituency,
-          county,
-          profileComplete: true,
-        },
-      });
-
-      if (updateError) throw updateError;
-
-      // Update profile in the profiles table
+      // First update the profile in the profiles table
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -101,25 +89,48 @@ export function LocationForm() {
         })
         .eq('id', user?.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        throw profileError;
+      }
 
-      // Get fresh session
+      // Then update auth user metadata
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          village: data.village,
+          ward: data.ward,
+          constituency: data.constituency,
+          county,
+          profile_complete: true,
+        },
+      });
+
+      if (updateError) {
+        console.error('Auth update error:', updateError);
+        throw updateError;
+      }
+
+      // Get fresh session to update the UI
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
 
-      if (!sessionData.session) {
+      if (!sessionData.session?.user) {
         throw new Error("Session not found after update");
       }
+
+      // Invalidate queries to refresh user data
+      queryClient.invalidateQueries({ queryKey: ["user"] });
 
       return sessionData.session.user;
     },
     onSuccess: () => {
       toast({
         title: "Location updated",
-        description: "Your location has been updated successfully.",
+        description: "Your location information has been saved successfully.",
       });
     },
     onError: (error: Error) => {
+      console.error('Location update error:', error);
       toast({
         title: "Update failed",
         description: error.message,
