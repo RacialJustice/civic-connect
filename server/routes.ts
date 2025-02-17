@@ -127,8 +127,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (ward && constituency) {
         const isValidWard = validateWardInConstituency(ward, constituency);
         if (!isValidWard) {
-          return res.status(400).json({ 
-            error: "The specified ward does not belong to this constituency" 
+          return res.status(400).json({
+            error: "The specified ward does not belong to this constituency"
           });
         }
       }
@@ -136,8 +136,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get county based on constituency
       const county = constituency ? getCountyByConstituency(constituency) : null;
       if (constituency && !county) {
-        return res.status(400).json({ 
-          error: "Invalid constituency name" 
+        return res.status(400).json({
+          error: "Invalid constituency name"
         });
       }
 
@@ -153,8 +153,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error) {
       console.error('Error updating user profile:', error);
-      res.status(400).json({ 
-        error: error instanceof Error ? error.message : "Failed to update profile" 
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Failed to update profile"
       });
     }
   });
@@ -239,12 +239,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('New WebSocket connection');
 
     // Authentication check using the session
-    if (!req.session?.passport?.user) {
+    if (!req.user?.id) {
       ws.close(1008, 'Authentication required');
       return;
     }
 
-    const userId = req.session.passport.user;
+    const userId = req.user.id;
 
     // Get user details from storage
     storage.getUser(userId).then(user => {
@@ -254,19 +254,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Store client information
-      clients.set(ws, { userId: user.id, username: user.displayName });
+      clients.set(ws, { userId: user.id, username: user.name || 'Anonymous' });
 
       // Send welcome message
       ws.send(JSON.stringify({
         type: 'system',
-        content: `Welcome ${user.displayName}!`,
+        content: `Welcome ${user.name || 'Anonymous'}!`,
         timestamp: new Date().toISOString()
       }));
 
       // Broadcast user joined message
       const joinMessage = JSON.stringify({
         type: 'system',
-        content: `${user.displayName} joined the chat`,
+        content: `${user.name || 'Anonymous'} joined the chat`,
         timestamp: new Date().toISOString()
       });
 

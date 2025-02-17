@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   county: text("county"),
   country: text("country").default("Kenya").notNull(),
   role: text("role").default("citizen").notNull(),
+  level: text("level"), 
   emailVerified: boolean("email_verified").default(false).notNull(),
   verificationToken: text("verification_token"),
   verificationTokenExpiry: timestamp("verification_token_expiry"),

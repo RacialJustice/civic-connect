@@ -1,4 +1,4 @@
-import { type InsertUser, type SelectUser, type Feedback, type InsertFeedback, type SelectOfficial, type SelectCommunity, type SelectForum, type SelectParliamentarySession, type SelectDevelopmentProject } from "@shared/schema";
+import { type InsertUser, type SelectUser, type SelectFeedback, type InsertFeedback, type SelectOfficial, type SelectCommunity, type SelectForum, type SelectParliamentarySession, type SelectDevelopmentProject, type SelectPost, type InsertPost } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes } from "crypto";
@@ -17,9 +17,9 @@ export interface IStorage {
   getUser(id: number): Promise<SelectUser | undefined>;
   getUserByEmail(email: string): Promise<SelectUser | undefined>;
   createUser(user: InsertUser): Promise<SelectUser>;
-  getLeaders(): Promise<SelectUser[]>;
-  getFeedbackForLeader(leaderId: number): Promise<Feedback[]>;
-  createFeedback(userId: number, feedback: InsertFeedback): Promise<Feedback>;
+  getLeaders({ ward, constituency, county }: { ward?: string; constituency?: string; county?: string }): Promise<SelectUser[]>;
+  getFeedbackForLeader(leaderId: number): Promise<SelectFeedback[]>;
+  createFeedback(userId: number, feedback: InsertFeedback): Promise<SelectFeedback>;
   sessionStore: session.Store;
   searchOfficials(term: string, location: string): Promise<SelectOfficial[]>;
   searchCommunities(term: string, location: string): Promise<SelectCommunity[]>;
@@ -42,6 +42,11 @@ export interface IStorage {
       county?: string | null;
     }
   ): Promise<SelectUser>;
+  getUserActivity(userId: number): Promise<any[]>;
+  getForum(forumId: number): Promise<SelectForum | undefined>;
+  getForumPosts(forumId: number): Promise<SelectPost[]>;
+  createPost(post: InsertPost): Promise<SelectPost>;
+  upsertVote(vote: { postId: number; userId: number; type: string }): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -54,6 +59,8 @@ export class MemStorage implements IStorage {
   private forums: Map<number, SelectForum>;
   private parliamentarySessions: Map<number, SelectParliamentarySession>;
   private developmentProjects: Map<number, SelectDevelopmentProject>;
+  private posts: Map<number, SelectPost> | undefined;
+  private votes: Map<string, { postId: number; userId: number; type: string; id: string; createdAt: Date; }> | undefined;
   sessionStore: session.Store;
 
   constructor() {
@@ -139,6 +146,87 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.officials.set(official2.id, official2);
+
+    // Add test leaders at different levels
+    const nationalLeader: SelectUser = {
+      id: this.currentUserId++,
+      email: "national@gov.ke",
+      password: await hashPassword("leader123"),
+      name: "Dr. Sarah Mwangi",
+      village: null,
+      ward: null,
+      constituency: null,
+      county: null,
+      country: "Kenya",
+      role: "leader",
+      level: "national",
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      interests: ["governance"],
+      createdAt: new Date(),
+    };
+    this.users.set(nationalLeader.id, nationalLeader);
+
+    const countyLeader: SelectUser = {
+      id: this.currentUserId++,
+      email: "county@kiambu.go.ke",
+      password: await hashPassword("leader123"),
+      name: "Hon. James Kamau",
+      village: null,
+      ward: null,
+      constituency: null,
+      county: "Kiambu",
+      country: "Kenya",
+      role: "leader",
+      level: "county",
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      interests: ["development"],
+      createdAt: new Date(),
+    };
+    this.users.set(countyLeader.id, countyLeader);
+
+    const constituencyLeader: SelectUser = {
+      id: this.currentUserId++,
+      email: "mp@kabete.go.ke",
+      password: await hashPassword("leader123"),
+      name: "Hon. Peter Gitau",
+      village: null,
+      ward: null,
+      constituency: "Kabete",
+      county: "Kiambu",
+      country: "Kenya",
+      role: "leader",
+      level: "constituency",
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      interests: ["education"],
+      createdAt: new Date(),
+    };
+    this.users.set(constituencyLeader.id, constituencyLeader);
+
+    const wardLeader: SelectUser = {
+      id: this.currentUserId++,
+      email: "mca@kabete.go.ke",
+      password: await hashPassword("leader123"),
+      name: "Hon. Mary Njeri",
+      village: null,
+      ward: "Kabete",
+      constituency: "Kabete",
+      county: "Kiambu",
+      country: "Kenya",
+      role: "leader",
+      level: "ward",
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      interests: ["local development"],
+      createdAt: new Date(),
+    };
+    this.users.set(wardLeader.id, wardLeader);
   }
 
   async getUser(id: number): Promise<SelectUser | undefined> {
@@ -174,8 +262,40 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async getLeaders(): Promise<SelectUser[]> {
-    return Array.from(this.users.values()).filter((user) => user.role === "leader");
+  async getLeaders({ ward, constituency, county }: { 
+    ward?: string, 
+    constituency?: string, 
+    county?: string 
+  } = {}): Promise<SelectUser[]> {
+    const leaders = Array.from(this.users.values()).filter(user => {
+      // Only return users with 'leader' role
+      if (user.role !== 'leader') return false;
+
+      // If no location filters provided, return all leaders
+      if (!ward && !constituency && !county) return true;
+
+      // National level leaders should always be included
+      if (user.level === 'national') return true;
+
+      // For county level, include if county matches
+      if (user.level === 'county') {
+        return !county || user.county === county;
+      }
+
+      // For constituency level, include if constituency matches
+      if (user.level === 'constituency') {
+        return !constituency || user.constituency === constituency;
+      }
+
+      // For ward level, include if ward matches
+      if (user.level === 'ward') {
+        return !ward || user.ward === ward;
+      }
+
+      return false;
+    });
+
+    return leaders;
   }
 
   async getFeedbackForLeader(leaderId: number): Promise<Feedback[]> {
@@ -327,6 +447,52 @@ export class MemStorage implements IStorage {
 
     this.users.set(userId, updatedUser);
     return updatedUser;
+  }
+
+  async getUserActivity(userId: number): Promise<any[]> {
+    // Stub implementation - return empty activity list
+    return [];
+  }
+
+  async getForum(forumId: number): Promise<SelectForum | undefined> {
+    return Array.from(this.forums.values()).find(forum => forum.id === forumId);
+  }
+
+  async getForumPosts(forumId: number): Promise<SelectPost[]> {
+    // Return posts for the given forum
+    return Array.from(this.posts?.values() || [])
+      .filter(post => post.forumId === forumId);
+  }
+
+  async createPost(post: InsertPost): Promise<SelectPost> {
+    const id = this.posts?.size ? Math.max(...Array.from(this.posts.keys())) + 1 : 1;
+    const newPost = {
+      ...post,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    if (!this.posts) {
+      this.posts = new Map();
+    }
+
+    this.posts.set(id, newPost);
+    return newPost;
+  }
+
+  async upsertVote(vote: { postId: number; userId: number; type: string }): Promise<void> {
+    // Stub implementation - just store the vote
+    if (!this.votes) {
+      this.votes = new Map();
+    }
+
+    const voteId = `${vote.postId}-${vote.userId}`;
+    this.votes.set(voteId, {
+      ...vote,
+      id: voteId,
+      createdAt: new Date()
+    });
   }
 }
 
