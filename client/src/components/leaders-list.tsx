@@ -27,6 +27,9 @@ export function LeadersList() {
     enabled: !!user?.constituency // Only fetch when constituency is available
   });
 
+  console.log('User:', user);
+  console.log('Leaders:', leaders);
+
   if (isLoading) {
     return (
       <div className="flex justify-center p-8">
