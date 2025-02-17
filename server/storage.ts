@@ -1,8 +1,17 @@
 import { type InsertUser, type SelectUser, type Feedback, type InsertFeedback, type SelectOfficial, type SelectCommunity, type SelectForum, type SelectParliamentarySession, type SelectDevelopmentProject } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
 
 const MemoryStore = createMemoryStore(session);
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
 
 export interface IStorage {
   getUser(id: number): Promise<SelectUser | undefined>;
@@ -48,6 +57,76 @@ export class MemStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
+
+    // Initialize with test data
+    this.initializeTestData();
+  }
+
+  private async initializeTestData() {
+    // Add a test admin user
+    const adminUser: SelectUser = {
+      id: this.currentUserId++,
+      email: "admin@kenyaconnect.com",
+      password: await hashPassword("admin123"),
+      name: "Admin User",
+      village: null,
+      ward: "Central Ward",
+      constituency: "Nairobi Central",
+      county: "Nairobi",
+      country: "Kenya",
+      role: "admin",
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      interests: ["governance", "development"],
+      createdAt: new Date(),
+    };
+    this.users.set(adminUser.id, adminUser);
+
+    // Add some test officials
+    const official1: SelectOfficial = {
+      id: 1,
+      name: "Hon. Sarah Kamau",
+      role: "Member of Parliament",
+      level: "National",
+      party: "Democratic Party",
+      photo: null,
+      email: "sarah.kamau@parliament.go.ke",
+      phone: "+254700000001",
+      village: null,
+      ward: null,
+      constituency: "Nairobi Central",
+      county: "Nairobi",
+      country: "Kenya",
+      termStart: new Date("2022-08-09"),
+      termEnd: new Date("2027-08-09"),
+      responsibilities: "Legislative duties, constituency development",
+      socialMedia: null,
+      createdAt: new Date(),
+    };
+    this.officials.set(official1.id, official1);
+
+    const official2: SelectOfficial = {
+      id: 2,
+      name: "Hon. John Mwangi",
+      role: "County Assembly Member",
+      level: "County",
+      party: "Unity Party",
+      photo: null,
+      email: "john.mwangi@assembly.go.ke",
+      phone: "+254700000002",
+      village: null,
+      ward: "Central Ward",
+      constituency: null,
+      county: "Nairobi",
+      country: "Kenya",
+      termStart: new Date("2022-08-09"),
+      termEnd: new Date("2027-08-09"),
+      responsibilities: "County legislation, ward development",
+      socialMedia: null,
+      createdAt: new Date(),
+    };
+    this.officials.set(official2.id, official2);
   }
 
   async getUser(id: number): Promise<SelectUser | undefined> {
