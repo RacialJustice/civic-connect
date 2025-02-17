@@ -1,44 +1,32 @@
-import { createContext, ReactNode, useContext } from "react";
-import {
-  useQuery,
-  useMutation,
-  UseMutationResult,
-} from "@tanstack/react-query";
-import { insertUserSchema, type SelectUser, type InsertUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { type SelectUser, type InsertUser } from "@shared/schema";
+import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 type AuthContextType = {
   user: SelectUser | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
-  logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  loginMutation: ReturnType<typeof useLoginMutation>;
+  logoutMutation: ReturnType<typeof useLogoutMutation>;
+  registerMutation: ReturnType<typeof useRegisterMutation>;
 };
 
-type LoginData = Pick<InsertUser, "email" | "password">;
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthContext = createContext<AuthContextType | null>(null);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
+function useLoginMutation() {
   const { toast } = useToast();
-  const {
-    data: user,
-    error,
-    isLoading,
-  } = useQuery<SelectUser | undefined, Error>({
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-  });
-
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
+  return useMutation({
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      return data.user;
     },
     onError: (error: Error) => {
       toast({
@@ -48,14 +36,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
   });
+}
 
-  const registerMutation = useMutation({
-    mutationFn: async (credentials: InsertUser) => {
-      const res = await apiRequest("POST", "/api/register", credentials);
-      return await res.json();
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
+function useRegisterMutation() {
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async (userData: InsertUser) => {
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            name: userData.name,
+            role: userData.role,
+            village: userData.village,
+            ward: userData.ward,
+            constituency: userData.constituency,
+            county: userData.county,
+            country: userData.country,
+          },
+        },
+      });
+      if (error) throw error;
+      return data.user;
     },
     onError: (error: Error) => {
       toast({
@@ -65,13 +68,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
   });
+}
 
-  const logoutMutation = useMutation({
+function useLogoutMutation() {
+  const { toast } = useToast();
+  return useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
-    },
-    onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     },
     onError: (error: Error) => {
       toast({
@@ -81,6 +85,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
   });
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const { toast } = useToast();
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const {
+    data: user,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ["user", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user) return null;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user,
+  });
+
+  const loginMutation = useLoginMutation();
+  const registerMutation = useRegisterMutation();
+  const logoutMutation = useLogoutMutation();
 
   return (
     <AuthContext.Provider
