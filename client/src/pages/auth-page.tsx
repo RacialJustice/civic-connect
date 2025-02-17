@@ -21,7 +21,7 @@ export default function AuthPage() {
 
   const loginForm = useForm({
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -29,13 +29,16 @@ export default function AuthPage() {
   const registerForm = useForm({
     resolver: zodResolver(insertUserSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
-      displayName: "",
-      isLeader: false,
+      name: "",
+      village: "",
+      ward: "",
       constituency: "",
-      position: "",
-      bio: "",
+      county: "",
+      country: "Kenya",
+      role: "citizen",
+      interests: [],
     },
   });
 
@@ -68,10 +71,11 @@ export default function AuthPage() {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
-                      id="username"
-                      {...loginForm.register("username")}
+                      id="email"
+                      type="email"
+                      {...loginForm.register("email")}
                     />
                   </div>
                   <div className="space-y-2">
@@ -113,10 +117,18 @@ export default function AuthPage() {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label htmlFor="r-username">Username</Label>
+                    <Label htmlFor="r-email">Email</Label>
                     <Input
-                      id="r-username"
-                      {...registerForm.register("username")}
+                      id="r-email"
+                      type="email"
+                      {...registerForm.register("email")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="r-name">Name</Label>
+                    <Input
+                      id="r-name"
+                      {...registerForm.register("name")}
                     />
                   </div>
                   <div className="space-y-2">
@@ -125,13 +137,6 @@ export default function AuthPage() {
                       id="r-password"
                       type="password"
                       {...registerForm.register("password")}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="displayName">Display Name</Label>
-                    <Input
-                      id="displayName"
-                      {...registerForm.register("displayName")}
                     />
                   </div>
                   <Button

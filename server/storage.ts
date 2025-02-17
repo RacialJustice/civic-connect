@@ -1,21 +1,21 @@
-import { User, InsertUser, Feedback, InsertFeedback } from "@shared/schema";
+import { type InsertUser, type SelectUser, type Feedback, type InsertFeedback } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
 const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  getLeaders(): Promise<User[]>;
+  getUser(id: number): Promise<SelectUser | undefined>;
+  getUserByEmail(email: string): Promise<SelectUser | undefined>;
+  createUser(user: InsertUser): Promise<SelectUser>;
+  getLeaders(): Promise<SelectUser[]>;
   getFeedbackForLeader(leaderId: number): Promise<Feedback[]>;
   createFeedback(userId: number, feedback: InsertFeedback): Promise<Feedback>;
   sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
+  private users: Map<number, SelectUser>;
   private feedbacks: Map<number, Feedback>;
   private currentUserId: number;
   private currentFeedbackId: number;
@@ -31,34 +31,41 @@ export class MemStorage implements IStorage {
     });
   }
 
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: number): Promise<SelectUser | undefined> {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
+  async getUserByEmail(email: string): Promise<SelectUser | undefined> {
     return Array.from(this.users.values()).find(
-      (user) => user.username === username,
+      (user) => user.email === email,
     );
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: InsertUser): Promise<SelectUser> {
     const id = this.currentUserId++;
-    const user: User = {
+    const user = {
       id,
-      username: insertUser.username,
+      email: insertUser.email,
       password: insertUser.password,
-      displayName: insertUser.displayName,
-      isLeader: insertUser.isLeader ?? false,
-      constituency: insertUser.constituency ?? null,
-      position: insertUser.position ?? null,
-      bio: insertUser.bio ?? null,
+      name: insertUser.name || null,
+      village: insertUser.village || null,
+      ward: insertUser.ward || null,
+      constituency: insertUser.constituency || null,
+      county: insertUser.county || null,
+      country: insertUser.country || "Kenya",
+      role: insertUser.role || "citizen",
+      emailVerified: insertUser.emailVerified || false,
+      verificationToken: insertUser.verificationToken || null,
+      verificationTokenExpiry: insertUser.verificationTokenExpiry || null,
+      interests: insertUser.interests || [],
+      createdAt: new Date(),
     };
     this.users.set(id, user);
     return user;
   }
 
-  async getLeaders(): Promise<User[]> {
-    return Array.from(this.users.values()).filter((user) => user.isLeader);
+  async getLeaders(): Promise<SelectUser[]> {
+    return Array.from(this.users.values()).filter((user) => user.role === "leader");
   }
 
   async getFeedbackForLeader(leaderId: number): Promise<Feedback[]> {

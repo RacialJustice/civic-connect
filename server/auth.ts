@@ -5,7 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as SelectUser } from "@shared/schema";
+import { type SelectUser } from "@shared/schema";
 
 declare global {
   namespace Express {
@@ -46,27 +46,30 @@ export function setupAuth(app: Express) {
   app.use(passport.session());
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
-      try {
-        const user = await storage.getUserByUsername(username);
-        if (!user) {
-          console.log('Login failed: User not found:', username);
-          return done(null, false);
-        }
+    new LocalStrategy(
+      { usernameField: 'email' }, // Use email field instead of username
+      async (email, password, done) => {
+        try {
+          const user = await storage.getUserByEmail(email);
+          if (!user) {
+            console.log('Login failed: User not found:', email);
+            return done(null, false);
+          }
 
-        const isValid = await comparePasswords(password, user.password);
-        if (!isValid) {
-          console.log('Login failed: Invalid password for user:', username);
-          return done(null, false);
-        }
+          const isValid = await comparePasswords(password, user.password);
+          if (!isValid) {
+            console.log('Login failed: Invalid password for user:', email);
+            return done(null, false);
+          }
 
-        console.log('Login successful for user:', username);
-        return done(null, user);
-      } catch (err) {
-        console.error('Login error:', err);
-        return done(err);
+          console.log('Login successful for user:', email);
+          return done(null, user);
+        } catch (err) {
+          console.error('Login error:', err);
+          return done(err);
+        }
       }
-    }),
+    ),
   );
 
   passport.serializeUser((user, done) => {
@@ -87,9 +90,9 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
+      const existingUser = await storage.getUserByEmail(req.body.email);
       if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+        return res.status(400).json({ message: "Email already exists" });
       }
 
       const hashedPassword = await hashPassword(req.body.password);
