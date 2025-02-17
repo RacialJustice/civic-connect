@@ -8,6 +8,7 @@ import { ChatProvider } from "./hooks/use-chat";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
+import LeadersPage from "@/pages/leaders-page";
 import { ProtectedRoute } from "./lib/protected-route";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/dashboard" component={Dashboard} />
+      <ProtectedRoute path="/leaders" component={LeadersPage} />
       <Route component={NotFound} />
     </Switch>
   );
