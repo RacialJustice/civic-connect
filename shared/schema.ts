@@ -59,11 +59,11 @@ export const communities = pgTable("communities", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   type: text("type").notNull(),
-  parentId: integer("parent_id").references(() => communities.id),
+  parentId: integer("parent_id").references((): AnyColumn => communities.id),
   description: text("description"),
   population: integer("population"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}) as typeof communities;
 
 export const resources = pgTable("resources", {
   id: serial("id").primaryKey(),
@@ -107,10 +107,10 @@ export const comments = pgTable("comments", {
   content: text("content").notNull(),
   postId: integer("post_id").notNull().references(() => posts.id),
   authorId: integer("author_id").notNull().references(() => users.id),
-  parentId: integer("parent_id").references(() => comments.id),
+  parentId: integer("parent_id").references((): AnyColumn => comments.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}) as typeof comments;
 
 export const votes = pgTable("votes", {
   id: serial("id").primaryKey(),
@@ -546,3 +546,59 @@ export const notificationPreferenceRelations = relations(notificationPreferences
     references: [forums.id],
   }),
 }));
+
+// Add Database type for Supabase
+export type Database = {
+  public: {
+    Tables: {
+      users: {
+        Row: SelectUser;
+        Insert: InsertUser;
+      };
+      officials: {
+        Row: SelectOfficial;
+        Insert: InsertOfficial;
+      };
+      communities: {
+        Row: SelectCommunity;
+        Insert: InsertCommunity;
+      };
+      forums: {
+        Row: SelectForum;
+        Insert: InsertForum;
+      };
+      posts: {
+        Row: SelectPost;
+        Insert: InsertPost;
+      };
+      comments: {
+        Row: SelectComment;
+        Insert: InsertComment;
+      };
+      parliamentary_sessions: {
+        Row: SelectParliamentarySession;
+        Insert: InsertParliamentarySession;
+      };
+      development_projects: {
+        Row: SelectDevelopmentProject;
+        Insert: InsertDevelopmentProject;
+      };
+      forum_moderators: {
+        Row: SelectForumModerator;
+        Insert: InsertForumModerator;
+      };
+      forum_members: {
+        Row: SelectForumMember;
+        Insert: InsertForumMember;
+      };
+      emergency_services: {
+        Row: SelectEmergencyService;
+        Insert: InsertEmergencyService;
+      };
+      feedbacks: {
+        Row: SelectFeedback;
+        Insert: InsertFeedback;
+      };
+    };
+  };
+};

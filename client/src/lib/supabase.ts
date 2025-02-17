@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { type Database } from '@shared/schema';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -10,21 +11,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing required Supabase configuration. Please check your environment variables.');
 }
 
-let supabase;
-
-try {
-  console.log('Initializing Supabase client...');
-  supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
-  });
-  console.log('Supabase client initialized successfully');
-} catch (error) {
-  console.error('Failed to initialize Supabase client:', error);
-  throw error;
-}
+const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+    redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+  }
+});
 
 export { supabase };
