@@ -31,6 +31,17 @@ export interface IStorage {
     status: string
   ): Promise<SelectDevelopmentProject[]>;
   updateUserLocation(userId: number, update: { ward: string; constituency: string; county: string }): Promise<SelectUser>;
+  updateUserProfile(
+    userId: number,
+    update: {
+      name?: string;
+      email?: string;
+      village?: string | null;
+      ward?: string | null;
+      constituency?: string | null;
+      county?: string | null;
+    }
+  ): Promise<SelectUser>;
 }
 
 export class MemStorage implements IStorage {
@@ -283,6 +294,35 @@ export class MemStorage implements IStorage {
       ward: update.ward,
       constituency: update.constituency,
       county: update.county,
+    };
+
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  async updateUserProfile(
+    userId: number,
+    update: {
+      name?: string;
+      email?: string;
+      village?: string | null;
+      ward?: string | null;
+      constituency?: string | null;
+      county?: string | null;
+    }
+  ): Promise<SelectUser> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser = {
+      ...user,
+      ...update,
+      // Ensure null values are properly handled
+      village: update.village ?? user.village,
+      ward: update.ward ?? user.ward,
+      constituency: update.constituency ?? user.constituency,
+      county: update.county ?? user.county,
     };
 
     this.users.set(userId, updatedUser);

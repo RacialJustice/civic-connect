@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertFeedbackSchema, type InsertFeedback } from "@shared/schema";
+import { getCountyByConstituency, validateWardInConstituency } from "@shared/constants";
 
 // Maintain a list of connected clients
 const clients = new Map<WebSocket, { userId: number, username: string }>();
@@ -120,17 +121,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const { name, email, village, ward, constituency } = req.body;
+
     try {
+      // Validate location data
+      if (ward && constituency) {
+        const isValidWard = validateWardInConstituency(ward, constituency);
+        if (!isValidWard) {
+          return res.status(400).json({ 
+            error: "The specified ward does not belong to this constituency" 
+          });
+        }
+      }
+
+      // Get county based on constituency
+      const county = constituency ? getCountyByConstituency(constituency) : null;
+      if (constituency && !county) {
+        return res.status(400).json({ 
+          error: "Invalid constituency name" 
+        });
+      }
+
       const user = await storage.updateUserProfile(req.user!.id, {
         name,
         email,
         village,
         ward,
-        constituency
+        constituency,
+        county
       });
+
       res.json(user);
     } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : "Failed to update profile" });
+      console.error('Error updating user profile:', error);
+      res.status(400).json({ 
+        error: error instanceof Error ? error.message : "Failed to update profile" 
+      });
     }
   });
 
