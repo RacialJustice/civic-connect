@@ -29,6 +29,7 @@ export default function ForumsPage() {
 
   const filterForumsByLevel = (level: string) => {
     return forums?.filter((forum) => {
+      if (level === "village" && forum.village === user?.village) return true;
       if (level === "ward" && forum.ward === user?.ward) return true;
       if (level === "constituency" && forum.constituency === user?.constituency) return true;
       if (level === "county" && forum.county === user?.county) return true;
@@ -47,6 +48,30 @@ export default function ForumsPage() {
         </div>
 
         <div className="space-y-8">
+          {user?.village && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">Village Forums</h2>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filterForumsByLevel("village")?.map((forum) => (
+                  <Link key={forum.id} href={`/forums/${forum.id}`}>
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <CardTitle>{forum.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground">{forum.description}</p>
+                        <div className="flex justify-between items-center mt-4">
+                          <span className="text-sm text-muted-foreground">{forum.category}</span>
+                          <span className="text-sm text-muted-foreground capitalize">{forum.membershipType}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
           {user?.ward && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Ward Forums</h2>
