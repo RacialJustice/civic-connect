@@ -16,8 +16,7 @@ const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce',
-    redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+    flowType: 'pkce'
   }
 });
 

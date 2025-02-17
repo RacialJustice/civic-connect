@@ -21,33 +21,36 @@ function useLoginMutation() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      // First authenticate with Supabase
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (authError) throw authError;
 
-      // Get the user metadata from the auth response
-      const userData = authData.user?.user_metadata;
-
-      if (!userData) {
+      const user = authData.user;
+      if (!user) {
         throw new Error("No user data found");
       }
 
       return {
-        id: authData.user.id,
-        email: authData.user.email!,
-        name: userData.name,
-        village: userData.village,
-        ward: userData.ward,
-        constituency: userData.constituency,
-        county: userData.county,
-        country: userData.country || "Kenya",
-        role: userData.role || "citizen",
-        emailVerified: authData.user.email_confirmed_at !== null,
-        profileComplete: false,
-        registrationStep: "location",
+        id: user.id,
+        email: user.email!,
+        name: user.user_metadata.name,
+        village: user.user_metadata.village,
+        ward: user.user_metadata.ward,
+        constituency: user.user_metadata.constituency,
+        county: user.user_metadata.county,
+        country: user.user_metadata.country || "Kenya",
+        role: user.user_metadata.role || "citizen",
+        emailVerified: user.email_confirmed_at !== null,
+        profileComplete: user.user_metadata.profile_complete || false,
+        registrationStep: user.user_metadata.registration_step || "location",
+        password: "", // Required by schema but not used
+        createdAt: new Date(user.created_at),
+        interests: user.user_metadata.interests || [],
+        verificationToken: null,
+        verificationTokenExpiry: null,
+        level: user.user_metadata.level || null
       };
     },
     onSuccess: (user) => {
@@ -79,22 +82,38 @@ function useRegisterMutation() {
             constituency: userData.constituency,
             county: userData.county,
             country: userData.country || "Kenya",
+            profile_complete: false,
+            registration_step: "location",
+            interests: []
           },
         },
       });
       if (error) throw error;
 
-      if (!data.user) {
+      const user = data.user;
+      if (!user) {
         throw new Error("Registration failed");
       }
 
       return {
-        id: data.user.id,
-        ...data.user.user_metadata,
-        email: data.user.email!,
-        emailVerified: data.user.email_confirmed_at !== null,
+        id: user.id,
+        email: user.email!,
+        name: user.user_metadata.name,
+        village: user.user_metadata.village,
+        ward: user.user_metadata.ward,
+        constituency: user.user_metadata.constituency,
+        county: user.user_metadata.county,
+        country: user.user_metadata.country || "Kenya",
+        role: user.user_metadata.role || "citizen",
+        emailVerified: user.email_confirmed_at !== null,
         profileComplete: false,
         registrationStep: "location",
+        password: "", // Required by schema but not used
+        createdAt: new Date(user.created_at),
+        interests: [],
+        verificationToken: null,
+        verificationTokenExpiry: null,
+        level: null
       };
     },
     onError: (error: Error) => {
@@ -132,13 +151,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authInitialized, setAuthInitialized] = useState(false);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setAuthInitialized(true);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -151,18 +168,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error,
     isLoading,
   } = useQuery({
-    queryKey: ["user", session?.user?.id],
+    queryKey: ["/api/user", session?.user?.id],
     queryFn: async () => {
       if (!session?.user) return null;
 
-      // Return user data from session
+      const user = session.user;
       return {
-        id: session.user.id,
-        email: session.user.email!,
-        ...session.user.user_metadata,
-        emailVerified: session.user.email_confirmed_at !== null,
-        profileComplete: false,
-        registrationStep: "location",
+        id: user.id,
+        email: user.email!,
+        name: user.user_metadata.name,
+        village: user.user_metadata.village,
+        ward: user.user_metadata.ward,
+        constituency: user.user_metadata.constituency,
+        county: user.user_metadata.county,
+        country: user.user_metadata.country || "Kenya",
+        role: user.user_metadata.role || "citizen",
+        emailVerified: user.email_confirmed_at !== null,
+        profileComplete: user.user_metadata.profile_complete || false,
+        registrationStep: user.user_metadata.registration_step || "location",
+        password: "", // Required by schema but not used
+        createdAt: new Date(user.created_at),
+        interests: user.user_metadata.interests || [],
+        verificationToken: null,
+        verificationTokenExpiry: null,
+        level: user.user_metadata.level || null
       };
     },
     enabled: !!session?.user,
@@ -172,7 +201,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useRegisterMutation();
   const logoutMutation = useLogoutMutation();
 
-  // Show loading state until auth is initialized
   if (!authInitialized) {
     return (
       <div className="flex items-center justify-center min-h-screen">
