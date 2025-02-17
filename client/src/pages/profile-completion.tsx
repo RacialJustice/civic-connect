@@ -71,7 +71,7 @@ export default function ProfileCompletion() {
         return;
       }
 
-      // Update the user metadata in Supabase
+      // First, update the user metadata in Supabase Auth
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
           village: data.village,
@@ -83,6 +83,20 @@ export default function ProfileCompletion() {
       });
 
       if (updateError) throw updateError;
+
+      // Then, update the user profile in the profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          village: data.village,
+          ward: data.ward,
+          constituency: data.constituency,
+          county,
+          profile_complete: true,
+        })
+        .eq('id', user?.id);
+
+      if (profileError) throw profileError;
 
       // Get the updated session to refresh the user data
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
