@@ -14,12 +14,64 @@ type Leader = {
   email: string | null;
   constituency?: string;
   county?: string;
+  ward?: string;
 };
+
+type LeadersByLevel = {
+  ward: Leader[];
+  constituency: Leader[];
+  county: Leader[];
+};
+
+function LeaderSection({ title, leaders }: { title: string; leaders: Leader[] }) {
+  if (leaders.length === 0) return null;
+
+  return (
+    <div className="mb-8">
+      <h2 className="text-xl font-semibold mb-4">{title}</h2>
+      <div className="space-y-4">
+        {leaders.map((leader) => (
+          <Card key={leader.id}>
+            <CardHeader>
+              <div className="flex flex-col gap-1">
+                <CardTitle className="text-lg">{leader.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {leader.role} - {leader.party}
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Position</p>
+                      <p>{leader.position || leader.role}</p>
+                    </div>
+                    {leader.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <a href={`mailto:${leader.email}`} className="text-sm hover:underline">
+                          {leader.email}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  <Button variant="outline">Send Feedback</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function LeadersList() {
   const { user } = useAuth();
 
-  const { data: leaders, isLoading } = useQuery<Leader[]>({
+  const { data: leaders = [], isLoading } = useQuery<Leader[]>({
     queryKey: ['/api/leaders', {
       ward: user?.ward,
       constituency: user?.constituency,
@@ -27,13 +79,6 @@ export function LeadersList() {
     }],
     enabled: !!user?.constituency // Only fetch when constituency is available
   });
-
-  console.log('User location:', { 
-    ward: user?.ward,
-    constituency: user?.constituency,
-    county: user?.county
-  });
-  console.log('Leaders data:', leaders);
 
   if (isLoading) {
     return (
@@ -46,13 +91,10 @@ export function LeadersList() {
   if (!leaders || leaders.length === 0) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Your Local Leaders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">
             {user?.constituency ? 
-              `No leaders found for ${user.constituency} constituency.` :
+              `No leaders found for your location.` :
               'Please complete your location information to see your local leaders.'}
           </p>
         </CardContent>
@@ -60,42 +102,26 @@ export function LeadersList() {
     );
   }
 
+  // Group leaders by their administrative level
+  const leadersByLevel = leaders.reduce<LeadersByLevel>(
+    (acc, leader) => {
+      if (leader.ward) {
+        acc.ward.push(leader);
+      } else if (leader.constituency) {
+        acc.constituency.push(leader);
+      } else if (leader.county) {
+        acc.county.push(leader);
+      }
+      return acc;
+    },
+    { ward: [], constituency: [], county: [] }
+  );
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-4xl font-bold">Your Local Leaders</h1>
-      {leaders.map((leader) => (
-        <Card key={leader.id} className="w-full">
-          <CardHeader>
-            <div className="flex flex-col gap-1">
-              <CardTitle className="text-2xl">{leader.name}</CardTitle>
-              <p className="text-lg text-muted-foreground">
-                {leader.role} - {leader.constituency || leader.county}
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Position</p>
-                    <p>{leader.position || leader.role}</p>
-                  </div>
-                  {leader.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a href={`mailto:${leader.email}`} className="text-sm hover:underline">
-                        {leader.email}
-                      </a>
-                    </div>
-                  )}
-                </div>
-                <Button variant="outline">Send Feedback</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-8">
+      <LeaderSection title="Ward Leaders" leaders={leadersByLevel.ward} />
+      <LeaderSection title="Constituency Leaders" leaders={leadersByLevel.constituency} />
+      <LeaderSection title="County Leaders" leaders={leadersByLevel.county} />
     </div>
   );
 }
