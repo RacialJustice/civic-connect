@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
@@ -50,7 +51,22 @@ export default function ForumsPage() {
         <div className="space-y-8">
           {user && (
             <section>
-              <h2 className="text-2xl font-semibold mb-4">Village Forums</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-semibold">Village Forums</h2>
+                <Link href="/forums/village" className="text-sm text-blue-600 hover:underline">View all</Link>
+              </div>
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Trending Topics</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {filterForumsByLevel("village")?.slice(0, 5).map((forum) => (
+                    <Link key={forum.id} href={`/forums/${forum.id}`}>
+                      <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
+                        {forum.category}
+                      </Badge>
+                    </Link>
+                  ))}
+                </div>
+              </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filterForumsByLevel("village")?.map((forum) => (
                   <Link key={forum.id} href={`/forums/${forum.id}`}>
@@ -74,7 +90,22 @@ export default function ForumsPage() {
 
           {user && (
             <section>
-              <h2 className="text-2xl font-semibold mb-4">Ward Forums</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-semibold">Ward Forums</h2>
+                <Link href="/forums/ward" className="text-sm text-blue-600 hover:underline">View all</Link>
+              </div>
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Trending Topics</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {filterForumsByLevel("ward")?.slice(0, 5).map((forum) => (
+                    <Link key={forum.id} href={`/forums/${forum.id}`}>
+                      <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
+                        {forum.category}
+                      </Badge>
+                    </Link>
+                  ))}
+                </div>
+              </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filterForumsByLevel("ward")?.map((forum) => (
                   <Link key={forum.id} href={`/forums/${forum.id}`}>
