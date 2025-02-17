@@ -11,7 +11,7 @@ export interface IStorage {
   getLeaders(): Promise<User[]>;
   getFeedbackForLeader(leaderId: number): Promise<Feedback[]>;
   createFeedback(userId: number, feedback: InsertFeedback): Promise<Feedback>;
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -19,7 +19,7 @@ export class MemStorage implements IStorage {
   private feedbacks: Map<number, Feedback>;
   private currentUserId: number;
   private currentFeedbackId: number;
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
@@ -43,7 +43,16 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user = { ...insertUser, id };
+    const user: User = {
+      id,
+      username: insertUser.username,
+      password: insertUser.password,
+      displayName: insertUser.displayName,
+      isLeader: insertUser.isLeader ?? false,
+      constituency: insertUser.constituency ?? null,
+      position: insertUser.position ?? null,
+      bio: insertUser.bio ?? null,
+    };
     this.users.set(id, user);
     return user;
   }
