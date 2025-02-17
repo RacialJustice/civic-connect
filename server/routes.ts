@@ -89,6 +89,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(projects);
   });
 
+  app.patch("/api/user/location", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    const { ward, constituency } = req.body;
+    const user = await storage.updateUserLocation(req.user!.id, {
+      ward,
+      constituency,
+      // We'll add county based on constituency later
+      county: "Nairobi" // Default for now
+    });
+
+    res.json(user);
+  });
+
   const httpServer = createServer(app);
 
   // Initialize WebSocket server

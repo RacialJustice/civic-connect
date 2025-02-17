@@ -30,6 +30,7 @@ export interface IStorage {
     location: string,
     status: string
   ): Promise<SelectDevelopmentProject[]>;
+  updateUserLocation(userId: number, update: { ward: string; constituency: string; county: string }): Promise<SelectUser>;
 }
 
 export class MemStorage implements IStorage {
@@ -267,6 +268,25 @@ export class MemStorage implements IStorage {
 
       return matchesTerm && matchesLocation && matchesStatus;
     });
+  }
+  async updateUserLocation(
+    userId: number,
+    update: { ward: string; constituency: string; county: string }
+  ): Promise<SelectUser> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser = {
+      ...user,
+      ward: update.ward,
+      constituency: update.constituency,
+      county: update.county,
+    };
+
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
 }
 
