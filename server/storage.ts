@@ -213,12 +213,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLocalOfficials(location: { village?: string; ward?: string; constituency?: string; county?: string }): Promise<SelectOfficial[]> {
-    let query = db.select().from(officials);
-    if (location.village) query = query.where(eq(officials.village, location.village));
-    if (location.ward) query = query.where(eq(officials.ward, location.ward));
-    if (location.constituency) query = query.where(eq(officials.constituency, location.constituency));
-    if (location.county) query = query.where(eq(officials.county, location.county));
-    return query;
+    const query = db.select().from(officials);
+    const conditions = [];
+
+    // Add conditions based on location hierarchy
+    if (location.constituency) {
+      conditions.push(
+        or(
+          eq(officials.constituency, location.constituency),
+          eq(officials.county, 'Kiambu') // Include county officials when viewing constituency
+        )
+      );
+    } else if (location.county) {
+      conditions.push(eq(officials.county, location.county));
+    }
+
+    // Only return active officials
+    conditions.push(eq(officials.status, 'active'));
+
+    return query.where(and(...conditions));
   }
 
   async getWomenRepresentative(county: string): Promise<SelectOfficial | undefined> {

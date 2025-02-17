@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -7,9 +8,10 @@ import { ErrorBoundary } from "@/components/error-boundary";
 type Leader = {
   id: number;
   name: string;
-  level: 'national' | 'county' | 'constituency' | 'ward';
   role: string;
-  ward?: string;
+  level: 'national' | 'county' | 'constituency' | 'ward';
+  position: string;
+  party: string;
   constituency?: string;
   county?: string;
 };
@@ -23,7 +25,7 @@ export function LeadersList() {
       constituency: user?.constituency,
       county: user?.county
     }],
-    enabled: !!user // Only fetch when user data is available
+    enabled: !!user?.constituency // Only fetch when constituency is available
   });
 
   if (isLoading) {
@@ -34,25 +36,16 @@ export function LeadersList() {
     );
   }
 
-  const groupedLeaders = leaders?.reduce((acc, leader) => {
-    const level = leader.level;
-    if (!acc[level]) {
-      acc[level] = [];
-    }
-    acc[level].push(leader);
-    return acc;
-  }, {} as Record<string, Leader[]>);
-
-  if (!groupedLeaders || Object.keys(groupedLeaders).length === 0) {
+  if (!leaders || leaders.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>No Leaders Found</CardTitle>
+          <CardTitle>Your Local Leaders</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
             {user?.constituency ? 
-              `No leaders are currently available for ${user.constituency}.` :
+              `No leaders found for ${user.constituency} constituency.` :
               'Please complete your location information to see your local leaders.'}
           </p>
         </CardContent>
@@ -62,35 +55,25 @@ export function LeadersList() {
 
   return (
     <div className="space-y-8">
-      {Object.entries(groupedLeaders).map(([level, leaders]) => (
-        <section key={level}>
-          <h2 className="text-2xl font-semibold mb-4 capitalize">
-            {level} Level Leaders
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {leaders.map((leader) => (
-              <Card key={leader.id}>
-                <CardHeader>
-                  <CardTitle>{leader.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{leader.role}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {leader.ward && (
-                      <p className="text-sm">Ward: {leader.ward}</p>
-                    )}
-                    {leader.constituency && (
-                      <p className="text-sm">Constituency: {leader.constituency}</p>
-                    )}
-                    {leader.county && (
-                      <p className="text-sm">County: {leader.county}</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+      {leaders.map((leader) => (
+        <Card key={leader.id} className="w-full">
+          <CardHeader>
+            <CardTitle>{leader.name}</CardTitle>
+            <p className="text-sm text-muted-foreground">{leader.role}</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <p className="text-sm">Party: {leader.party}</p>
+              {leader.constituency && (
+                <p className="text-sm">Constituency: {leader.constituency}</p>
+              )}
+              {leader.county && (
+                <p className="text-sm">County: {leader.county}</p>
+              )}
+              <Button variant="secondary">Send Feedback</Button>
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );
