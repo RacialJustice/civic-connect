@@ -13,6 +13,7 @@ import { ProtectedRoute } from "./lib/protected-route";
 import { createClient } from '@supabase/supabase-js';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './lib/supabase';
+import ProfilePage from "@/pages/profile-page"; // Added import
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/leaders" component={LeadersPage} />
+      <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Added Profile Route */}
       <Route component={NotFound} />
     </Switch>
   );
