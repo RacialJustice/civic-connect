@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { createContext, ReactNode, useContext } from "react";
 import {
   useQuery,
@@ -94,43 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         registerMutation,
       }}
     >
-=======
-import { createContext, useContext, ReactNode } from "react";
-
-// Simplified context without auth
-interface AuthContextType {
-  user: null;
-  loading: boolean;
-  error: null;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: false,
-  error: null
-});
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  return (
-    <AuthContext.Provider value={{
-      user: null,
-      loading: false,
-      error: null
-    }}>
->>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-<<<<<<< HEAD
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-=======
-  return useContext(AuthContext);
->>>>>>> 19c724b7c93c94c7ada61db7cb86557d7bdca27b
 }
