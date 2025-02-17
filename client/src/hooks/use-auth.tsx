@@ -4,7 +4,7 @@ import { type SelectUser, type InsertUser } from "@shared/schema";
 import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 
 type AuthContextType = {
   user: SelectUser | null;
@@ -88,10 +88,18 @@ function useLogoutMutation() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthInitialized(true);
+    });
+
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -108,14 +116,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       if (!session?.user) return null;
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        return null;
+      }
     },
     enabled: !!session?.user,
   });
@@ -123,6 +136,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginMutation = useLoginMutation();
   const registerMutation = useRegisterMutation();
   const logoutMutation = useLogoutMutation();
+
+  // Show loading state until auth is initialized
+  if (!authInitialized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider
