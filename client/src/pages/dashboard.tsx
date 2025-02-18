@@ -92,6 +92,13 @@ export default function Dashboard() {
             <ParticipationChart />
             <AttendanceChart />
           </div>
+          
+          <div className="space-y-6 mt-6">
+            <ContentModerationDashboard />
+            <UserManagement />
+            <AnalyticsDashboard />
+          </div>
+
           <div className="mt-6">
             <Chat />
           </div>
