@@ -1,4 +1,3 @@
-
 import { Navigation } from "@/components/navigation";
 import { EngagementMetrics } from "@/components/engagement-metrics";
 import { Chat } from "@/components/chat";
@@ -8,6 +7,20 @@ import { User, Feedback, SelectEvent, SelectForum } from "@shared/schema";
 import { Loader2, Users, Calendar, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Placeholder components - replace with actual implementations
+function CalendarSync() {
+  return <div>Calendar Sync Feature</div>;
+}
+
+function DocumentManager() {
+  return <div>Document Management System</div>;
+}
+
+function SocialMediaIntegration() {
+  return <div>Social Media Integration</div>;
+}
+
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -92,7 +105,7 @@ export default function Dashboard() {
             <ParticipationChart />
             <AttendanceChart />
           </div>
-          
+
           <div className="space-y-6 mt-6">
             <ContentModerationDashboard />
             <UserManagement />
@@ -151,11 +164,24 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4">Live Chat</h2>
-          <Chat />
+        <div className="mt-8 space-y-8">
+          <CalendarSync />
+          <DocumentManager />
+          <SocialMediaIntegration />
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">Live Chat</h2>
+            <Chat />
+          </div>
         </div>
       </main>
     </div>
   );
 }
+
+// Placeholder components - replace with actual implementations
+function BudgetAllocationChart() { return <div>Budget Allocation Chart</div> }
+function ParticipationChart() { return <div>Participation Chart</div> }
+function AttendanceChart() { return <div>Attendance Chart</div> }
+function ContentModerationDashboard() { return <div>Content Moderation Dashboard</div> }
+function UserManagement() { return <div>User Management</div> }
+function AnalyticsDashboard() { return <div>Analytics Dashboard</div> }
