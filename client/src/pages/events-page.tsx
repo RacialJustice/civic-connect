@@ -157,6 +157,12 @@ export default function EventsPage() {
                 >
                   {event.isNotified ? 'Notifications On' : 'Get Notified'}
                 </Button>
+                <Button
+                  variant="link"
+                  onClick={() => window.location.href = `/events/${event.id}`}
+                >
+                  See Details
+                </Button>
               </div>
             </CardContent>
           </Card>
