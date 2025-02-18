@@ -6,6 +6,8 @@ import { type SelectForum } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
+import { Header } from "@/components/header";
+
 export default function ForumPage() {
   const { user } = useAuth();
   const [, params] = useRoute("/forums/:level");
@@ -65,7 +67,9 @@ export default function ForumPage() {
   }
 
   return (
-    <div className="container py-8">
+    <div>
+      <Header />
+      <div className="container py-8">
       <Card>
         <CardHeader>
           <CardTitle>{forum.name}</CardTitle>
@@ -74,6 +78,7 @@ export default function ForumPage() {
           <p>{forum.description}</p>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }
