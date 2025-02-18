@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { Loader2 } from "lucide-react";
 
 type Forum = {
   id: number;
@@ -22,6 +23,13 @@ type Forum = {
 };
 
 export default function ForumsPage() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  if (!user) {
+    setLocation("/auth");
+    return null;
+  }
   const { user } = useAuth();
   const { data: forums = [], isLoading } = useQuery<Forum[]>({
     queryKey: ["forums", "ward"],
