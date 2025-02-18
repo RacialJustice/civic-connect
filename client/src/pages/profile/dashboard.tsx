@@ -11,6 +11,10 @@ import { Redirect } from "wouter";
 
 export default function Dashboard() {
   const { user, isLoading: isLoadingAuth } = useAuth();
+
+  if (!user || user.role !== 'admin') {
+    return <Redirect to="/profile" />;
+  }
   
   const { data: leaders = [], isLoading: isLoadingLeaders } = useQuery<User[]>({
     queryKey: ["/api/leaders"],
