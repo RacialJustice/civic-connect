@@ -31,22 +31,20 @@ function Router() {
     <ErrorBoundary fallback={<div>Something went wrong. Please refresh the page.</div>}>
       <Layout>
         <Switch>
-          <Route path="/auth" component={AuthPage} />
-          <ProtectedRoute path="/" component={HomePage} />
-          <ProtectedRoute path="/leaders" component={LeadersPage} />
-          <Route path="/profile" component={ProfilePage} />
-          <ProtectedRoute path="/dashboard" component={Dashboard} />
-          <Route path="/forums" component={ForumsPage} />
-          <Route path="/forums/:id" component={ForumPage} />
-          <Route path="/events/create" component={CreateEventPage} />
-          <Route path="/events/:id" component={EventPage} />
-          <Route path="/events" component={EventsPage} />
+          <Route path="/auth"><AuthPage /></Route>
+          <Route path="/"><ProtectedRoute component={HomePage} /></Route>
+          <Route path="/leaders"><ProtectedRoute component={LeadersPage} /></Route>
+          <Route path="/profile"><ProfilePage /></Route>
+          <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
+          <Route path="/forums"><ForumsPage /></Route>
+          <Route path="/forums/:id">{params => <ForumPage id={params.id} />}</Route>
+          <Route path="/events/create"><CreateEventPage /></Route>
+          <Route path="/events/:id">{params => <EventPage id={params.id} />}</Route>
+          <Route path="/events"><EventsPage /></Route>
           <Route path="/notifications">
-            <ProtectedRoute>
-              <NotificationsPage />
-            </ProtectedRoute>
+            <ProtectedRoute component={NotificationsPage} />
           </Route>
-          <Route component={NotFound} />
+          <Route><NotFound /></Route>
         </Switch>
       </Layout>
     </ErrorBoundary>
