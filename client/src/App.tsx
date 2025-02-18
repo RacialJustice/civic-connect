@@ -48,6 +48,21 @@ function Router() {
           <Route path="/notifications">
             <ProtectedRoute component={NotificationsPage} />
           </Route>
+          <Route path="/documents">
+            <ProtectedRoute component={() => import("@/pages/resources/documents").then(m => m.default)} />
+          </Route>
+          <Route path="/calendar">
+            <ProtectedRoute component={() => import("@/pages/resources/calendar").then(m => m.default)} />
+          </Route>
+          <Route path="/reports">
+            <ProtectedRoute component={() => import("@/pages/resources/reports").then(m => m.default)} />
+          </Route>
+          <Route path="/local-updates">
+            <ProtectedRoute component={() => import("@/pages/resources/local-updates").then(m => m.default)} />
+          </Route>
+          <Route path="/projects">
+            <ProtectedRoute component={() => import("@/pages/resources/projects").then(m => m.default)} />
+          </Route>
           <Route><NotFound /></Route>
         </Switch>
       </Layout>
