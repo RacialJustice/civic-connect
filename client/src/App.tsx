@@ -34,7 +34,7 @@ function Router() {
           <Route path="/forums" component={ForumsPage} />
           <Route path="/forums/:id" component={ForumPage} />
           <Route path="/events" component={EventsPage} />
-        <Route path="/events/:id" component={EventPage} /> {/* Added events route */}
+          <Route path="/events/:id" component={EventPage} />
           <Route component={NotFound} />
         </Switch>
       </Layout>
