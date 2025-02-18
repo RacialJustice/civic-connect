@@ -392,7 +392,34 @@ app.get("/api/reports/project/:id", async (req, res) => {
   res.send(Buffer.from(pdfBytes));
 });
 
-app.get("/api/events/:id", async (req, res) => {
+app.post("/api/donations/verify", async (req, res) => {
+    try {
+      const { transaction_id } = req.body;
+      
+      const response = await fetch(
+        `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`
+          }
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data.status === "success") {
+        // Store donation record in database
+        // Send thank you notification
+        res.json({ status: "success" });
+      } else {
+        res.status(400).json({ error: "Payment verification failed" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  app.get("/api/events/:id", async (req, res) => {
     const event = mockEvents.find(e => e.id === parseInt(req.params.id));
     if (!event) {
       return res.status(404).json({ error: "Event not found" });

@@ -1,20 +1,22 @@
 
-import twilio from 'twilio';
+import nodemailer from 'nodemailer';
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-export async function sendSMS(to: string, message: string) {
-  return client.messages.create({
-    body: message,
+export async function sendNotification(to: string, subject: string, message: string) {
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM,
     to,
-    from: process.env.TWILIO_PHONE_NUMBER
+    subject,
+    text: message,
+    html: message.replace(/\n/g, '<br>')
   });
-}
-
-export async function initiateUSSD(phoneNumber: string, message: string) {
-  // Implementation depends on USSD gateway provider
-  console.log('USSD initiation:', { phoneNumber, message });
 }
