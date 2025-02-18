@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { Redirect } from "wouter";
+import { useEffect } from "react";
 
 interface ProtectedRouteProps {
   component: () => React.JSX.Element;
@@ -9,6 +9,12 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ component: Component }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      window.location.href = "/auth";
+    }
+  }, [user, isLoading]);
 
   if (isLoading) {
     return (
@@ -19,7 +25,7 @@ export function ProtectedRoute({ component: Component }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    return <Redirect to="/auth" />;
+    return null;
   }
 
   return <Component />;
