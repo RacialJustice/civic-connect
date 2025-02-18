@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { setupAuth } from "./auth";
@@ -24,12 +24,16 @@ interface AuthenticatedRequest extends IncomingMessage {
 const clients = new Map<WebSocket, { userId: number, username: string }>();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
   setupAuth(app);
+
+  console.log('Setting up routes...');
 
   // Register the gamification routes
   app.use("/api", gamificationRouter);
+  console.log('Gamification routes registered');
 
-  app.get("/api/leaders", async (req, res) => {
+  app.get("/api/leaders", async (req: Request, res: Response) => {
     try {
       console.log('Received leader request with params:', req.query);
       const leaders = await storage.getLocalOfficials({
@@ -45,13 +49,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/leaders/:id/feedback", async (req, res) => {
+  app.get("/api/leaders/:id/feedback", async (req: Request, res: Response) => {
     const leaderId = parseInt(req.params.id);
     const feedbacks = await storage.getFeedbackForLeader(leaderId);
     res.json(feedbacks);
   });
 
-  app.post("/api/leaders/:id/feedback", async (req, res) => {
+  app.post("/api/leaders/:id/feedback", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -72,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search endpoints
-  app.get("/api/search/officials", async (req, res) => {
+  app.get("/api/search/officials", async (req: Request, res: Response) => {
     const { term, location } = req.query;
     const officials = await storage.searchOfficials(
       term as string,
@@ -81,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(officials);
   });
 
-  app.get("/api/search/communities", async (req, res) => {
+  app.get("/api/search/communities", async (req: Request, res: Response) => {
     const { term, location } = req.query;
     const communities = await storage.searchCommunities(
       term as string,
@@ -90,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(communities);
   });
 
-  app.get("/api/search/forums", async (req, res) => {
+  app.get("/api/search/forums", async (req: Request, res: Response) => {
     const { term, category } = req.query;
     const forums = await storage.searchForums(
       term as string,
@@ -99,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(forums);
   });
 
-  app.get("/api/search/parliament", async (req, res) => {
+  app.get("/api/search/parliament", async (req: Request, res: Response) => {
     const { term, type } = req.query;
     const sessions = await storage.searchParliamentarySessions(
       term as string,
@@ -108,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(sessions);
   });
 
-  app.get("/api/search/projects", async (req, res) => {
+  app.get("/api/search/projects", async (req: Request, res: Response) => {
     const { term, location, status } = req.query;
     const projects = await storage.searchDevelopmentProjects(
       term as string,
@@ -118,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(projects);
   });
 
-  app.post("/api/admin/set-role", async (req, res) => {
+  app.post("/api/admin/set-role", async (req: Request, res: Response) => {
     const { email, role } = req.body;
     try {
       const { data: { user }, error } = await supabase.auth.admin.getUserByEmail(email);
@@ -136,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/user/location", async (req, res) => {
+  app.patch("/api/user/location", async (req: Request, res: Response) => {
     try {
       const { data: { user }, error } = await supabase.auth.getUser(req.headers.authorization?.split(' ')[1]);
       if (error || !user) {
@@ -175,9 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  });
-
-  app.patch("/api/user/profile", async (req, res) => {
+  app.patch("/api/user/profile", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -187,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validate location data
       if (ward && constituency) {
-        const isValidWard = validateWardInConstituency(ward, constituency);
+        const isValidWard = isValidWardInConstituency(ward, constituency);
         if (!isValidWard) {
           return res.status(400).json({
             error: "The specified ward does not belong to this constituency"
@@ -221,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/user/activity", async (req, res) => {
+  app.get("/api/user/activity", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -234,7 +236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/forums/:id", async (req, res) => {
+  app.get("/api/forums/:id", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -249,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(forum);
   });
 
-  app.get("/api/forums/:id/posts", async (req, res) => {
+  app.get("/api/forums/:id/posts", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -259,7 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(posts);
   });
 
-  app.post("/api/forums/:id/posts", async (req, res) => {
+  app.post("/api/forums/:id/posts", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -274,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(post);
   });
 
-  app.post("/api/forums/:forumId/posts/:postId/vote", async (req, res) => {
+  app.post("/api/forums/:forumId/posts/:postId/vote", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -292,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(posts);
   });
 
-  app.get("/api/forums", async (req, res) => {
+  app.get("/api/forums", async (req: Request, res: Response) => {
     try {
       if (!req.isAuthenticated()) {
         return res.json([]);
@@ -312,7 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/forums/village", async (req, res) => {
+  app.get("/api/forums/village", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -366,7 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   ];
 
-  app.get("/api/events", async (req, res) => {
+  app.get("/api/events", async (req: Request, res: Response) => {
     const { constituency, ward, village } = req.query;
 
     let filteredEvents = [...mockEvents];
@@ -393,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(filteredEvents);
   });
 
-  app.get("/api/reports/parliament/:id", async (req, res) => {
+  app.get("/api/reports/parliament/:id", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -405,7 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.send(Buffer.from(pdfBytes));
   });
 
-  app.get("/api/reports/project/:id", async (req, res) => {
+  app.get("/api/reports/project/:id", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -417,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.send(Buffer.from(pdfBytes));
   });
 
-  app.post("/api/donations/mpesa/initiate", async (req, res) => {
+  app.post("/api/donations/mpesa/initiate", async (req: Request, res: Response) => {
     try {
       const { phoneNumber, amount, reference } = req.body;
       const result = await initiateSTKPush(phoneNumber, amount, reference);
@@ -427,7 +429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/donations/mpesa/callback", async (req, res) => {
+  app.post("/api/donations/mpesa/callback", async (req: Request, res: Response) => {
     try {
       const { Body: { stkCallback } } = req.body;
       // Store transaction details in database
@@ -437,7 +439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/donations/verify", async (req, res) => {
+  app.post("/api/donations/verify", async (req: Request, res: Response) => {
       try {
         const { transaction_id } = req.body;
         
@@ -464,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-  app.get("/api/events/:id", async (req, res) => {
+  app.get("/api/events/:id", async (req: Request, res: Response) => {
     const event = mockEvents.find(e => e.id === parseInt(req.params.id));
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
@@ -476,21 +478,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const eventRegistrations = new Map<string, Set<number>>();
   const eventNotifications = new Map<string, Set<number>>();
 
-  app.post("/api/polls", async (req, res) => {
+  app.post("/api/polls", async (req: Request, res: Response) => {
     if (!req.isAuthenticated() || req.user?.role !== 'admin') {
       return res.sendStatus(403);
     }
     // Rest of poll creation logic
   });
 
-  app.post("/api/events", async (req, res) => {
+  app.post("/api/events", async (req: Request, res: Response) => {
     if (!req.isAuthenticated() || req.user?.role !== 'admin') {
       return res.sendStatus(403);
     }
     // Rest of event creation logic
   });
 
-  app.post("/api/events/:id/register", async (req, res) => {
+  app.post("/api/events/:id/register", async (req: Request, res: Response) => {
       if (!req.isAuthenticated()) {
         return res.sendStatus(401);
       }
@@ -515,7 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ registered: !isRegistered });
     });
 
-  app.post("/api/events/:id/notify", async (req, res) => {
+  app.post("/api/events/:id/notify", async (req: Request, res: Response) => {
       if (!req.isAuthenticated()) {
         return res.sendStatus(401);
       }
@@ -541,14 +543,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
 
   const httpServer = createServer(app);
+  console.log('HTTP server created');
 
-  // Initialize WebSocket server with proper types
+  // Initialize WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  console.log('WebSocket server initialized');
 
   wss.on('connection', (ws: WebSocket, req: AuthenticatedRequest) => {
     console.log('New WebSocket connection');
 
-    // Authentication check using the session
     if (!req.user?.id) {
       ws.close(1008, 'Authentication required');
       return;
@@ -557,7 +560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userId = req.user.id;
 
     // Get user details from storage
-    storage.getUser(userId).then(user => {
+    storage.getUser(userId.toString()).then(user => {
       if (!user) {
         ws.close(1008, 'User not found');
         return;
@@ -572,15 +575,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: `Welcome ${user.name || 'Anonymous'}!`,
         timestamp: new Date().toISOString()
       }));
-
-      // Broadcast user joined message
-      const joinMessage = JSON.stringify({
-        type: 'system',
-        content: `${user.name || 'Anonymous'} joined the chat`,
-        timestamp: new Date().toISOString()
-      });
-
-      broadcastMessage(joinMessage, ws);
 
       // Handle incoming messages
       ws.on('message', async (data) => {
@@ -629,6 +623,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  console.log('Routes setup completed');
   return httpServer;
 }
 
@@ -652,7 +647,7 @@ async function initiateSTKPush(phoneNumber: string, amount: number, reference: s
   throw new Error("Function not implemented.");
 }
 
-function validateWardInConstituency(ward: string, constituency: string): boolean {
+function isValidWardInConstituency(ward: string, constituency: string): boolean {
     //Implementation for validating ward in constituency
     throw new Error("Function not implemented.");
 }
