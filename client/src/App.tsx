@@ -18,7 +18,8 @@ import ProfilePage from "@/pages/profile-page";
 import ForumPage from "./pages/forum-page";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Layout } from "./components/layout";
-import EventsPage from "./pages/events-page"; // Added import
+import EventsPage from "./pages/events-page";
+import EventPage from "./pages/event-page";
 
 function Router() {
   return (
