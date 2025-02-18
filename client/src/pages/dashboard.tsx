@@ -96,7 +96,7 @@ export default function Dashboard() {
   return (
     <div>
       <main className="container mx-auto px-4 py-8 space-y-8">
-        <h1 className="text-4xl font-bold">Your Local Dashboard</h1>
+        <h1 className="text-4xl font-bold">Your Dashboard</h1>
         <h2 className="text-xl text-muted-foreground">
           {user?.ward ? `${user.ward}, ${user.constituency}` : user?.constituency}
         </h2>
