@@ -5,11 +5,19 @@ import { SearchInterface } from "@/components/search-interface";
 import { useQuery } from "@tanstack/react-query";
 import { User, Feedback } from "@shared/schema";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Redirect } from "wouter";
 
 export default function Dashboard() {
+  const { user, isLoading: isLoadingAuth } = useAuth();
   const { data: leaders = [], isLoading: isLoadingLeaders } = useQuery<User[]>({
     queryKey: ["/api/leaders"],
+    enabled: user?.role === 'admin'
   });
+  
+  if (!user || user.role !== 'admin') {
+    return <Redirect to="/profile" />;
+  }
 
   const feedbackQueries = useQuery<Feedback[]>({
     queryKey: ["/api/leaders/feedback"],
