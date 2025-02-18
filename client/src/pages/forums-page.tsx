@@ -25,12 +25,8 @@ type Forum = {
 export default function ForumsPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-
-  if (!user) {
-    setLocation("/auth");
-    return null;
-  }
   const { data: forums = [], isLoading } = useQuery<Forum[]>({
+    enabled: !!user,
     queryKey: ["forums", "ward"],
     queryFn: async () => {
       if (!user) throw new Error("User not authenticated");
@@ -49,11 +45,8 @@ export default function ForumsPage() {
   });
 
   if (!user) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p>Please sign in to view forums</p>
-      </div>
-    );
+    setLocation("/auth");
+    return null;
   }
 
   if (isLoading) {
