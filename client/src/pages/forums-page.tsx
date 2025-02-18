@@ -30,7 +30,6 @@ export default function ForumsPage() {
     setLocation("/auth");
     return null;
   }
-  const { user } = useAuth();
   const { data: forums = [], isLoading } = useQuery<Forum[]>({
     queryKey: ["forums", "ward"],
     queryFn: async () => {
