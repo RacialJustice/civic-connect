@@ -1,6 +1,5 @@
 import { Navigation } from "@/components/navigation";
 import { EngagementMetrics } from "@/components/engagement-metrics";
-import { PollCreator } from "@/components/polls/poll-creator";
 import { Chat } from "@/components/chat";
 import { SearchInterface } from "@/components/search-interface";
 import { useQuery } from "@tanstack/react-query";
