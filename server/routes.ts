@@ -368,7 +368,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(filteredEvents);
   });
 
-  app.get("/api/events/:id", async (req, res) => {
+  app.get("/api/reports/parliament/:id", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.sendStatus(401);
+  }
+  
+  const sessionId = parseInt(req.params.id);
+  const pdfBytes = await generateParliamentReport(sessionId);
+  
+  res.setHeader('Content-Type', 'application/pdf');
+  res.send(Buffer.from(pdfBytes));
+});
+
+app.get("/api/reports/project/:id", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.sendStatus(401);
+  }
+  
+  const projectId = parseInt(req.params.id);
+  const pdfBytes = await generateProjectReport(projectId);
+  
+  res.setHeader('Content-Type', 'application/pdf');
+  res.send(Buffer.from(pdfBytes));
+});
+
+app.get("/api/events/:id", async (req, res) => {
     const event = mockEvents.find(e => e.id === parseInt(req.params.id));
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
