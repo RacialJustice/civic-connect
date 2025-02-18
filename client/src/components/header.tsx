@@ -27,6 +27,7 @@ export function Header() {
     { href: "/", label: "Home" },
     { href: "/leaders", label: "Leaders" },
     { href: "/forums", label: "Forums" },
+    { href: "/events", label: "Events" },
     { href: "/dashboard", label: "Dashboard" },
   ];
 
