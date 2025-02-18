@@ -26,7 +26,6 @@ export default function ForumsPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { data: forums = [], isLoading } = useQuery<Forum[]>({
-    enabled: !!user,
     queryKey: ["forums", "ward"],
     queryFn: async () => {
       if (!user) throw new Error("User not authenticated");
