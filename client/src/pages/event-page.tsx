@@ -52,6 +52,22 @@ export default function EventPage() {
     }
   };
 
+  const handleNotify = async () => {
+    try {
+      await notifyMutation.mutateAsync(parseInt(eventId!));
+      toast({
+        title: "Notification preferences updated",
+        description: "You will receive updates about this event",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to update notifications",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    }
+  };
+
   const { data: event, isLoading } = useQuery<SelectEvent>({
     queryKey: ["/api/events", eventId],
     queryFn: async () => {
@@ -133,12 +149,20 @@ export default function EventPage() {
 
           <div className="flex gap-4 mt-6">
             {user ? (
-              <Button 
-                variant={event.isRegistered ? "secondary" : "default"}
-                onClick={handleRegister}
-              >
-                {event.isRegistered ? 'Registered' : 'Register to Attend'}
-              </Button>
+              <>
+                <Button 
+                  variant={event.isRegistered ? "secondary" : "default"}
+                  onClick={handleRegister}
+                >
+                  {event.isRegistered ? 'Registered' : 'Register to Attend'}
+                </Button>
+                <Button
+                  variant={event.isNotified ? "secondary" : "outline"}
+                  onClick={handleNotify}
+                >
+                  {event.isNotified ? 'Notifications On' : 'Get Notified'}
+                </Button>
+              </>
             ) : (
               <p className="text-muted-foreground">Please login to register for this event</p>
             )}
