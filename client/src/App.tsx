@@ -15,22 +15,25 @@ import { createClient } from '@supabase/supabase-js';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './lib/supabase';
 import ProfilePage from "@/pages/profile-page";
-import ForumPage from "./pages/forum-page"; // Added import
-import { ErrorBoundary } from "@/components/error-boundary"; // Added import
+import ForumPage from "./pages/forum-page";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { Layout } from "./components/layout";
 
 function Router() {
   return (
     <ErrorBoundary fallback={<div>Something went wrong. Please refresh the page.</div>}>
-      <Switch>
-        <Route path="/auth" component={AuthPage} />
-        <ProtectedRoute path="/" component={HomePage} />
-        <ProtectedRoute path="/dashboard" component={Dashboard} />
-        <ProtectedRoute path="/leaders" component={LeadersPage} />
-        <ProtectedRoute path="/profile" component={ProfilePage} />
-        <Route path="/forums" component={ForumsPage} />
-        <Route path="/forums/:id" component={ForumPage} /> {/* Added route */}
-        <Route component={NotFound} />
-      </Switch>
+      <Layout>
+        <Switch>
+          <Route path="/auth" component={AuthPage} />
+          <ProtectedRoute path="/" component={HomePage} />
+          <ProtectedRoute path="/dashboard" component={Dashboard} />
+          <ProtectedRoute path="/leaders" component={LeadersPage} />
+          <ProtectedRoute path="/profile" component={ProfilePage} />
+          <Route path="/forums" component={ForumsPage} />
+          <Route path="/forums/:id" component={ForumPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </Layout>
     </ErrorBoundary>
   );
 }
