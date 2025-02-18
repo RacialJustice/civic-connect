@@ -6,7 +6,7 @@ import { Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { UserCircle } from "lucide-react";
 import { ThemeSwitcher } from "./theme-switcher";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
