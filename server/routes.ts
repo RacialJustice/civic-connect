@@ -392,6 +392,26 @@ app.get("/api/reports/project/:id", async (req, res) => {
   res.send(Buffer.from(pdfBytes));
 });
 
+app.post("/api/donations/mpesa/initiate", async (req, res) => {
+  try {
+    const { phoneNumber, amount, reference } = req.body;
+    const result = await initiateSTKPush(phoneNumber, amount, reference);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to initiate MPesa payment" });
+  }
+});
+
+app.post("/api/donations/mpesa/callback", async (req, res) => {
+  try {
+    const { Body: { stkCallback } } = req.body;
+    // Store transaction details in database
+    res.json({ received: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to process callback" });
+  }
+});
+
 app.post("/api/donations/verify", async (req, res) => {
     try {
       const { transaction_id } = req.body;
