@@ -8,7 +8,7 @@ import { useLocation } from 'wouter';
 
 export function PollCreator() {
   const { user } = useAuth();
-  const [, navigate] = useLocation();
+  const [, setLocation] = useLocation();
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);
 
