@@ -1,4 +1,5 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import * as React from "react";
+import { createContext, useContext, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SelectUser } from "@shared/schema";
 import { queryClient } from "../lib/queryClient";
@@ -146,9 +147,9 @@ function useLogoutMutation() {
   });
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [authInitialized, setAuthInitialized] = useState(false);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = React.useState<Session | null>(null);
+  const [authInitialized, setAuthInitialized] = React.useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
