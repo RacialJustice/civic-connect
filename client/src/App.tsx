@@ -20,6 +20,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { Layout } from "./components/layout";
 import EventsPage from "./pages/events-page";
 import EventPage from "./pages/event-page";
+import NotificationsPage from "@/pages/notifications-page"; // Import the new component
 
 function Router() {
   return (
@@ -35,6 +36,11 @@ function Router() {
           <Route path="/forums/:id" component={ForumPage} />
           <Route path="/events" component={EventsPage} />
           <Route path="/events/:id" component={EventPage} />
+          <Route path="/notifications">
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          </Route>
           <Route component={NotFound} />
         </Switch>
       </Layout>
