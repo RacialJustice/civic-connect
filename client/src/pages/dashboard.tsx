@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/navigation";
 import { EngagementMetrics } from "@/components/engagement-metrics";
+import { PollCreator } from "@/components/polls/poll-creator";
 import { Chat } from "@/components/chat";
 import { SearchInterface } from "@/components/search-interface";
 import { useQuery } from "@tanstack/react-query";
@@ -165,6 +166,14 @@ export default function Dashboard() {
         </div>
 
         <div className="mt-8 space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Community Polls</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PollCreator />
+            </CardContent>
+          </Card>
           <CalendarSync />
           <DocumentManager />
           <SocialMediaIntegration />
