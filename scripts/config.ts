@@ -1,3 +1,4 @@
+import 'dotenv/config';
 
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '../shared/schema';
@@ -53,3 +54,11 @@ async function createTables() {
 createTables()
   .then(() => console.log('Tables created successfully'))
   .catch(console.error);
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+export const config = {
+  databaseUrl: process.env.DATABASE_URL
+};
