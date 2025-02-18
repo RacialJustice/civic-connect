@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
+import { supabase } from './db';
 import { insertFeedbackSchema } from "@shared/schema";
 import type { IncomingMessage } from "http";
 import type { SelectUser } from "@shared/schema";
