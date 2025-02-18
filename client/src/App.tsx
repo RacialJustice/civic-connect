@@ -55,8 +55,16 @@ function Router() {
 }
 
 function App() {
+  const [theme, setTheme] = React.useState<'light' | 'dark'>('light');
+
+  React.useEffect(() => {
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(isDark ? 'dark' : 'light');
+  }, []);
+
   return (
     <I18nextProvider i18n={i18n}>
+      <div className={theme}>
       <QueryClientProvider client={queryClient}>
         <SessionContextProvider supabaseClient={supabase}>
           <AuthProvider>
@@ -68,6 +76,7 @@ function App() {
           </AuthProvider>
         </SessionContextProvider>
       </QueryClientProvider>
+      </div>
     </I18nextProvider>
   );
 }
