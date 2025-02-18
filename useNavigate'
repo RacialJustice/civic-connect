@@ -1,0 +1,19 @@
+import { useContext, useCallback } from 'react';
+import { RouterContext } from './RouterContext';
+
+function useNavigate() {
+    const { history } = useContext(RouterContext);
+
+    /* Function to navigate to a given path */
+    const navigate = useCallback((to, options = {}) => {
+        if (options.replace) {
+            history.replace(to);
+        } else {
+            history.push(to);
+        }
+    }, [history]);
+
+    return navigate;
+}
+
+export default useNavigate;
