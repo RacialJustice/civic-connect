@@ -20,15 +20,14 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { Layout } from "./components/layout";
 import EventsPage from "./pages/events-page";
 import EventPage from "./pages/event-page";
-import NotificationsPage from "@/pages/notifications-page"; // Import the new component
-import i18n from './lib/i18n'; // Import i18n instance
+import NotificationsPage from "@/pages/notifications-page";
+import i18n from './lib/i18n';
 import { I18nextProvider } from 'react-i18next';
-import CreateEventPage from "@/pages/create-event"; // Import the new component
-
+import CreateEventPage from "@/pages/create-event";
 
 function Router() {
   return (
-    <ErrorBoundary fallback={<div>Something went wrong. Please refresh the page.</div>}>
+    <ErrorBoundary>
       <Layout>
         <Switch>
           <Route path="/auth"><AuthPage /></Route>
@@ -37,9 +36,13 @@ function Router() {
           <Route path="/profile"><ProfilePage /></Route>
           <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
           <Route path="/forums"><ForumsPage /></Route>
-          <Route path="/forums/:id">{params => <ForumPage id={params.id} />}</Route>
+          <Route path="/forums/:id">
+            {(params) => <ForumPage forumId={params.id} />}
+          </Route>
           <Route path="/events/create"><CreateEventPage /></Route>
-          <Route path="/events/:id">{params => <EventPage id={params.id} />}</Route>
+          <Route path="/events/:id">
+            {(params) => <EventPage eventId={params.id} />}
+          </Route>
           <Route path="/events"><EventsPage /></Route>
           <Route path="/notifications">
             <ProtectedRoute component={NotificationsPage} />

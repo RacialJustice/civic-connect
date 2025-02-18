@@ -1,0 +1,88 @@
+import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+
+export default function CreateEventPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [, navigate] = useLocation(); // Renamed from setLocation to navigate
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [eventLocation, setEventLocation] = useState(""); // Renamed from location
+  const [virtualLink, setVirtualLink] = useState("");
+  const [maxAttendees, setMaxAttendees] = useState("");
+  const [format, setFormat] = useState<"physical" | "virtual" | "hybrid">("physical");
+
+  const createEventMutation = useMutation({
+    mutationFn: async (eventData: any) => {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventData),
+      });
+      if (!res.ok) throw new Error("Failed to create event");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Event created successfully",
+        description: "Your event has been created and is now visible to the community",
+      });
+      navigate("/events"); // Using navigate instead of setLocation
+    },
+    onError: () => {
+      toast({
+        title: "Failed to create event",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // ... rest of your code remains the same ...
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createEventMutation.mutate({
+      title,
+      description,
+      startTime: new Date(startTime).toISOString(),
+      endTime: endTime ? new Date(endTime).toISOString() : null,
+      location: eventLocation, // Updated to use eventLocation
+      virtualLink,
+      maxAttendees: maxAttendees ? parseInt(maxAttendees) : null,
+      format,
+      type: "community_meeting",
+      status: "upcoming",
+      village: user.village,
+      ward: user.ward,
+      constituency: user.constituency,
+      county: user.county,
+      requiresRegistration: true,
+    });
+  };
+
+  return (
+    <div className="container py-8">
+      {/* ... other JSX remains the same ... */}
+      <div>
+        <label className="text-sm font-medium">Location</label>
+        <Input 
+          value={eventLocation}
+          onChange={(e) => setEventLocation(e.target.value)}
+          placeholder="Physical location (if applicable)"
+        />
+      </div>
+      {/* ... rest of your JSX remains the same ... */}
+    </div>
+  );
+}

@@ -6,6 +6,7 @@ import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Session } from '@supabase/supabase-js';
+import { useLocation } from "wouter";
 
 type AuthContextType = {
   user: SelectUser | null;
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 function useLoginMutation() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+
   return useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -57,6 +59,7 @@ function useLoginMutation() {
     },
     onSuccess: (user) => {
       queryClient.setQueryData(["/api/user"], user);
+      setLocation("/");
     },
     onError: (error: Error) => {
       toast({
@@ -70,6 +73,8 @@ function useLoginMutation() {
 
 function useRegisterMutation() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
   return useMutation({
     mutationFn: async (userData: any) => {
       const { data, error } = await supabase.auth.signUp({
@@ -118,6 +123,13 @@ function useRegisterMutation() {
         level: null
       };
     },
+    onSuccess: () => {
+      toast({
+        title: "Registration successful",
+        description: "Please check your email to verify your account",
+      });
+      setLocation("/auth");
+    },
     onError: (error: Error) => {
       toast({
         title: "Registration failed",
@@ -130,6 +142,8 @@ function useRegisterMutation() {
 
 function useLogoutMutation() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
   return useMutation({
     mutationFn: async () => {
       const { error } = await supabase.auth.signOut();
@@ -137,6 +151,7 @@ function useLogoutMutation() {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
+      setLocation("/auth");
     },
     onError: (error: Error) => {
       toast({
@@ -176,7 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const user = session.user;
       return {
-        id: user.id,
+        id: parseInt(user.id), // Convert string ID to number
         email: user.email!,
         name: user.user_metadata.name,
         village: user.user_metadata.village,
@@ -189,7 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profileComplete: user.user_metadata.profile_complete || false,
         registrationStep: user.user_metadata.registration_step || "location",
         password: "", // Required by schema but not used
-        createdAt: new Date(user.created_at),
+        createdAt: user.created_at ? new Date(user.created_at) : null,
         interests: user.user_metadata.interests || [],
         verificationToken: null,
         verificationTokenExpiry: null,

@@ -20,18 +20,19 @@ import {
 } from "@shared/schema";
 
 type SearchCategory = "officials" | "communities" | "forums" | "parliament" | "projects";
+type SearchResult = SelectOfficial | SelectCommunity | SelectForum | SelectParliamentarySession | SelectDevelopmentProject;
 
 export function SearchInterface() {
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState<SearchCategory>("officials");
   const [location, setLocation] = useState("");
 
-  const { data: searchResults, isLoading } = useQuery({
+  const { data: searchResults = [], isLoading } = useQuery<SearchResult[]>({
     queryKey: [`/api/search/${category}`, searchTerm, location],
     enabled: searchTerm.length > 2 || location.length > 2,
   });
 
-  const renderResult = (item: any) => {
+  const renderResult = (item: SearchResult) => {
     switch (category) {
       case "officials":
         const official = item as SelectOfficial;
@@ -72,7 +73,9 @@ export function SearchInterface() {
           </Card>
         );
 
-      // Add more cases for other categories...
+      // Add cases for other categories
+      default:
+        return null;
     }
   };
 
@@ -119,7 +122,7 @@ export function SearchInterface() {
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
-          searchResults?.map(renderResult)
+          searchResults.map(renderResult)
         )}
       </div>
     </div>

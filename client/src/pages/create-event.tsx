@@ -1,6 +1,5 @@
-
 import { useAuth } from "@/hooks/use-auth";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,13 +11,13 @@ import { useState } from "react";
 export default function CreateEventPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [location, setLocation] = useState("");
+  const [eventLocation, setEventLocation] = useState(""); // Renamed from location
   const [virtualLink, setVirtualLink] = useState("");
   const [maxAttendees, setMaxAttendees] = useState("");
   const [format, setFormat] = useState<"physical" | "virtual" | "hybrid">("physical");
@@ -38,7 +37,7 @@ export default function CreateEventPage() {
         title: "Event created successfully",
         description: "Your event has been created and is now visible to the community",
       });
-      navigate("/events");
+      setLocation("/events");
     },
     onError: () => {
       toast({
@@ -68,7 +67,7 @@ export default function CreateEventPage() {
       description,
       startTime: new Date(startTime).toISOString(),
       endTime: endTime ? new Date(endTime).toISOString() : null,
-      location,
+      location: eventLocation, // Updated to use eventLocation
       virtualLink,
       maxAttendees: maxAttendees ? parseInt(maxAttendees) : null,
       format,
@@ -144,8 +143,8 @@ export default function CreateEventPage() {
             <div>
               <label className="text-sm font-medium">Location</label>
               <Input 
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                value={eventLocation}
+                onChange={(e) => setEventLocation(e.target.value)}
                 placeholder="Physical location (if applicable)"
               />
             </div>
@@ -169,8 +168,8 @@ export default function CreateEventPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full">
-              Create Event
+            <Button type="submit" disabled={createEventMutation.isPending} className="w-full">
+              {createEventMutation.isPending ? "Creating..." : "Create Event"}
             </Button>
           </form>
         </CardContent>
