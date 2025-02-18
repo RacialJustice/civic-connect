@@ -145,23 +145,11 @@ export default function EventsPage() {
                 )}
               </div>
             <div className="flex gap-2 mt-4">
-                <Button 
-                  variant={event.isRegistered ? "secondary" : "default"}
-                  onClick={() => handleRegister(event.id)}
-                >
-                  {event.isRegistered ? 'Attending' : 'Register to Attend'}
-                </Button>
                 <Button
-                  variant={event.isNotified ? "secondary" : "outline"}
-                  onClick={() => handleNotify(event.id)}
-                >
-                  {event.isNotified ? 'Notifications On' : 'Get Notified'}
-                </Button>
-                <Button
-                  variant="link"
+                  variant="default"
                   onClick={() => window.location.href = `/events/${event.id}`}
                 >
-                  See Details
+                  View Details
                 </Button>
               </div>
             </CardContent>

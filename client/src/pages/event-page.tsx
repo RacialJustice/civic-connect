@@ -1,15 +1,56 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type SelectEvent } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { formatDistance } from "date-fns";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function EventPage() {
   const [, params] = useRoute("/events/:id");
   const eventId = params?.id;
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const registerMutation = useMutation({
+    mutationFn: async (eventId: number) => {
+      const res = await fetch(`/api/events/${eventId}/register`, {
+        method: 'POST',
+      });
+      if (!res.ok) throw new Error('Failed to register');
+      return res.json();
+    },
+  });
+
+  const notifyMutation = useMutation({
+    mutationFn: async (eventId: number) => {
+      const res = await fetch(`/api/events/${eventId}/notify`, {
+        method: 'POST',
+      });
+      if (!res.ok) throw new Error('Failed to update notification');
+      return res.json();
+    },
+  });
+
+  const handleRegister = async () => {
+    try {
+      await registerMutation.mutateAsync(parseInt(eventId!));
+      toast({
+        title: "Successfully registered",
+        description: "You will receive email notifications about this event",
+      });
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    }
+  };
 
   const { data: event, isLoading } = useQuery<SelectEvent>({
     queryKey: ["/api/events", eventId],
@@ -90,12 +131,30 @@ export default function EventPage() {
             )}
           </div>
 
-          {event.virtualLink && (
+          <div className="flex gap-4 mt-6">
+            {user ? (
+              <Button 
+                variant={event.isRegistered ? "secondary" : "default"}
+                onClick={handleRegister}
+              >
+                {event.isRegistered ? 'Registered' : 'Register to Attend'}
+              </Button>
+            ) : (
+              <p className="text-muted-foreground">Please login to register for this event</p>
+            )}
+          </div>
+
+          {event.virtualLink && event.isRegistered && (
             <div className="mt-4">
               <h3 className="font-semibold mb-2">Virtual Meeting Link</h3>
               <a href={event.virtualLink} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
                 Join virtual meeting
               </a>
+            </div>
+          )}
+          {event.virtualLink && !event.isRegistered && (
+            <div className="mt-4 text-muted-foreground">
+              Register to get access to the virtual meeting link
             </div>
           )}
         </CardContent>
