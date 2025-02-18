@@ -269,9 +269,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/forums", async (req, res) => {
     try {
-      const forums = await storage.getForumsByLocation({});
-      res.json(forums);
+      if (!req.isAuthenticated()) {
+        return res.sendStatus(401);
+      }
+      
+      const forums = await storage.getForumsByLocation({
+        village: req.user?.village,
+        ward: req.user?.ward,
+        constituency: req.user?.constituency,
+        county: req.user?.county
+      });
+      
+      res.json(forums || []);
     } catch (error) {
+      console.error('Error fetching forums:', error);
       res.status(500).json({ error: error instanceof Error ? error.message : "Failed to fetch forums" });
     }
   });
