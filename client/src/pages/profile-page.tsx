@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Header } from "@/components/header";
-import Link from 'next/link'; // Added import for Link component
+import { Link } from 'wouter';
 
 export default function ProfilePage() {
   const { user } = useAuth();
