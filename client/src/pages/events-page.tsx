@@ -78,7 +78,15 @@ export default function EventsPage() {
       
       const res = await fetch(`/api/events?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch events");
-      return res.json();
+      const allEvents = await res.json();
+      
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+      
+      return allEvents.filter((event: SelectEvent) => {
+        const eventDate = new Date(event.startTime);
+        return event.status === 'upcoming' && eventDate >= twelveMonthsAgo;
+      });
     },
     enabled: !!user?.constituency,
   });
