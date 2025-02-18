@@ -23,6 +23,7 @@ import EventPage from "./pages/event-page";
 import NotificationsPage from "@/pages/notifications-page"; // Import the new component
 import i18n from './lib/i18n'; // Import i18n instance
 import { I18nextProvider } from 'react-i18next';
+import CreateEventPage from "@/pages/create-event-page"; // Import the new component
 
 
 function Router() {
@@ -37,8 +38,9 @@ function Router() {
           <ProtectedRoute path="/dashboard" component={Dashboard} />
           <Route path="/forums" component={ForumsPage} />
           <Route path="/forums/:id" component={ForumPage} />
-          <Route path="/events" component={EventsPage} />
+          <Route path="/events/create" component={CreateEventPage} />
           <Route path="/events/:id" component={EventPage} />
+          <Route path="/events" component={EventsPage} />
           <Route path="/notifications">
             <ProtectedRoute>
               <NotificationsPage />

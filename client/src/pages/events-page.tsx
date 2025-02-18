@@ -119,7 +119,14 @@ export default function EventsPage() {
 
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-6 pl-4">Local Events</h1>
+      <div className="flex justify-between items-center mb-6 pl-4">
+        <h1 className="text-3xl font-bold">Local Events</h1>
+        {canManageEvents && (
+          <Button onClick={() => window.location.href = '/events/create'}>
+            Create Event
+          </Button>
+        )}
+      </div>
       <div className="grid gap-4">
         {events?.map((event) => (
           <Card key={event.id}>
