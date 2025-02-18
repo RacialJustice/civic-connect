@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/use-auth';
 
 export function PollCreator() {
   const { user } = useAuth();
