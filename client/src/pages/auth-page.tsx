@@ -96,7 +96,7 @@ export default function AuthPage() {
               <CardHeader>
                 <CardTitle>Login</CardTitle>
                 <CardDescription>
-                  Welcome back to KenyaConnect
+                  Welcome back to Civic Connect
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -140,7 +140,7 @@ export default function AuthPage() {
               <CardHeader>
                 <CardTitle>Register</CardTitle>
                 <CardDescription>
-                  Create your KenyaConnect account
+                  Create your Civic Connect account
                 </CardDescription>
               </CardHeader>
               <CardContent>
