@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { type SelectEvent } from "@shared/schema";
 import { formatDistance } from "date-fns";
@@ -31,12 +32,40 @@ export default function EventsPage() {
     },
   });
 
-  const handleRegister = (eventId: number) => {
-    registerMutation.mutate(eventId);
+  const handleRegister = async (eventId: number) => {
+    try {
+      await registerMutation.mutateAsync(eventId);
+      // Automatically enable notifications when registering
+      if (!event?.isNotified) {
+        handleNotify(eventId);
+      }
+      toast({
+        title: "Successfully registered",
+        description: "You will receive email notifications about this event",
+      });
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleNotify = (eventId: number) => {
-    notifyMutation.mutate(eventId);
+  const handleNotify = async (eventId: number) => {
+    try {
+      await notifyMutation.mutateAsync(eventId);
+      toast({
+        title: "Notification preferences updated",
+        description: "You will receive updates about this event",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to update notifications",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    }
   };
 
   const { data: events, isLoading } = useQuery<SelectEvent[]>({
@@ -120,7 +149,7 @@ export default function EventsPage() {
                   variant={event.isRegistered ? "secondary" : "default"}
                   onClick={() => handleRegister(event.id)}
                 >
-                  {event.isRegistered ? 'Registered' : 'Register to Attend'}
+                  {event.isRegistered ? 'Attending' : 'Register to Attend'}
                 </Button>
                 <Button
                   variant={event.isNotified ? "secondary" : "outline"}
