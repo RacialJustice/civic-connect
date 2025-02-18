@@ -30,7 +30,7 @@ function Router() {
           <ProtectedRoute path="/" component={HomePage} />
           <ProtectedRoute path="/leaders" component={LeadersPage} />
           <Route path="/profile" component={ProfilePage} />
-          <Route path="/profile/dashboard" component={Dashboard} />
+          <ProtectedRoute path="/dashboard" component={Dashboard} />
           <Route path="/forums" component={ForumsPage} />
           <Route path="/forums/:id" component={ForumPage} />
           <Route path="/events" component={EventsPage} />
