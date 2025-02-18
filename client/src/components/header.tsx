@@ -7,6 +7,7 @@ import { Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 
 import { UserCircle } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { 
   DropdownMenu,
   DropdownMenuContent,
