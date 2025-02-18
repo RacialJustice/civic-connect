@@ -21,6 +21,9 @@ import { Layout } from "./components/layout";
 import EventsPage from "./pages/events-page";
 import EventPage from "./pages/event-page";
 import NotificationsPage from "@/pages/notifications-page"; // Import the new component
+import i18n from './i18n'; // Import i18n instance
+import { I18nextProvider } from 'react-i18next';
+
 
 function Router() {
   return (
@@ -50,16 +53,18 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={supabase}>
-        <AuthProvider>
-          <ChatProvider>
-            <Router />
-            <Toaster />
-          </ChatProvider>
-        </AuthProvider>
-      </SessionContextProvider>
-    </QueryClientProvider>
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={queryClient}>
+        <SessionContextProvider supabaseClient={supabase}>
+          <AuthProvider>
+            <ChatProvider>
+              <Router />
+              <Toaster />
+            </ChatProvider>
+          </AuthProvider>
+        </SessionContextProvider>
+      </QueryClientProvider>
+    </I18nextProvider>
   );
 }
 
