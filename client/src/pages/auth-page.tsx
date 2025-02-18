@@ -194,7 +194,7 @@ export default function AuthPage() {
             Connect with Your Leaders
           </h1>
           <p className="text-lg">
-            KenyaConnect brings citizens and leaders together for better governance and
+            Civic Connect brings citizens and leaders together for better governance and
             community engagement. Join us to make your voice heard and participate in
             shaping Kenya's future.
           </p>
