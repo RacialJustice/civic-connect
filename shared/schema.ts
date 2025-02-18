@@ -284,19 +284,107 @@ export const emergencyServices = pgTable("emergency_services", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Add new tables for gamification after the existing tables
+export const points = pgTable("points", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  amount: integer("amount").notNull(),
+  reason: text("reason").notNull(),
+  category: text("category").notNull(), // e.g., 'post_creation', 'comment', 'event_attendance'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const badges = pgTable("badges", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(), // Store the icon name/path
+  category: text("category").notNull(), // e.g., 'participation', 'leadership', 'engagement'
+  requirement: jsonb("requirement").notNull(), // Store requirements as JSON
+  points: integer("points").notNull(), // Points needed to earn this badge
+  level: integer("level").default(1).notNull(), // Badge level (for tiered badges)
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userBadges = pgTable("user_badges", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  badgeId: integer("badge_id").notNull().references(() => badges.id),
+  earnedAt: timestamp("earned_at").defaultNow(),
+  progress: integer("progress").default(0).notNull(), // Track progress towards badge
+});
+
 // Add to exports
+export const insertOfficialSchema = createInsertSchema(officials);
+export const insertCommunitySchema = createInsertSchema(communities);
+export const insertResourceSchema = createInsertSchema(resources);
+export const insertForumSchema = createInsertSchema(forums);
+export const insertPostSchema = createInsertSchema(posts);
+export const insertCommentSchema = createInsertSchema(comments);
+export const insertVoteSchema = createInsertSchema(votes);
+export const insertParliamentarySessionSchema = createInsertSchema(parliamentarySessions);
+export const insertAttendanceSchema = createInsertSchema(attendance);
+export const insertBillSchema = createInsertSchema(bills);
+export const insertVotingRecordSchema = createInsertSchema(votingRecords);
+export const insertDevelopmentProjectSchema = createInsertSchema(developmentProjects);
+export const insertForumModeratorSchema = createInsertSchema(forumModerators);
+export const insertForumMemberSchema = createInsertSchema(forumMembers);
+export const insertFeedbackSchema = createInsertSchema(feedbacks);
 export const insertEmergencyServiceSchema = createInsertSchema(emergencyServices);
-export type InsertEmergencyService = typeof emergencyServices.$inferInsert;
-export type SelectEmergencyService = typeof emergencyServices.$inferSelect;
+export const insertEventSchema = createInsertSchema(events);
+export const insertEventAttendanceSchema = createInsertSchema(eventAttendance);
+export const insertWhatsappNotificationSchema = createInsertSchema(whatsappNotifications);
+export const insertNotificationPreferenceSchema = createInsertSchema(notificationPreferences);
+export const insertPointSchema = createInsertSchema(points);
+export const insertBadgeSchema = createInsertSchema(badges);
+export const insertUserBadgeSchema = createInsertSchema(userBadges);
 
-// Add relations
-export const emergencyServiceRelations = relations(emergencyServices, ({ one }) => ({
-  verifier: one(users, {
-    fields: [emergencyServices.verifiedBy],
-    references: [users.id],
-  }),
-}));
 
+// Types
+export type InsertOfficial = typeof officials.$inferInsert;
+export type SelectOfficial = typeof officials.$inferSelect;
+export type InsertCommunity = typeof communities.$inferInsert;
+export type SelectCommunity = typeof communities.$inferSelect;
+export type InsertResource = typeof resources.$inferInsert;
+export type SelectResource = typeof resources.$inferSelect;
+export type InsertForum = typeof forums.$inferInsert;
+export type SelectForum = typeof forums.$inferSelect;
+export type InsertPost = typeof posts.$inferInsert;
+export type SelectPost = typeof posts.$inferSelect;
+export type InsertComment = typeof comments.$inferInsert;
+export type SelectComment = typeof comments.$inferSelect;
+export type InsertVote = typeof votes.$inferInsert;
+export type SelectVote = typeof votes.$inferSelect;
+export type InsertParliamentarySession = typeof parliamentarySessions.$inferInsert;
+export type SelectParliamentarySession = typeof parliamentarySessions.$inferSelect;
+export type InsertAttendance = typeof attendance.$inferInsert;
+export type SelectAttendance = typeof attendance.$inferSelect;
+export type InsertBill = typeof bills.$inferInsert;
+export type SelectBill = typeof bills.$inferSelect;
+export type InsertVotingRecord = typeof votingRecords.$inferInsert;
+export type SelectVotingRecord = typeof votingRecords.$inferSelect;
+export type InsertDevelopmentProject = typeof developmentProjects.$inferInsert;
+export type SelectDevelopmentProject = typeof developmentProjects.$inferSelect;
+export type InsertForumModerator = typeof forumModerators.$inferInsert;
+export type SelectForumModerator = typeof forumModerators.$inferSelect;
+export type InsertForumMember = typeof forumMembers.$inferInsert;
+export type SelectForumMember = typeof forumMembers.$inferSelect;
+export type InsertFeedback = typeof feedbacks.$inferInsert;
+export type SelectFeedback = typeof feedbacks.$inferSelect;
+export type InsertEvent = typeof events.$inferInsert;
+export type SelectEvent = typeof events.$inferSelect;
+export type InsertEventAttendance = typeof eventAttendance.$inferInsert;
+export type SelectEventAttendance = typeof eventAttendance.$inferSelect;
+export type InsertWhatsappNotification = typeof whatsappNotifications.$inferInsert;
+export type SelectWhatsappNotification = typeof whatsappNotifications.$inferSelect;
+export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;
+export type SelectNotificationPreference = typeof notificationPreferences.$inferSelect;
+export type InsertPoint = typeof points.$inferInsert;
+export type SelectPoint = typeof points.$inferSelect;
+export type InsertBadge = typeof badges.$inferInsert;
+export type SelectBadge = typeof badges.$inferSelect;
+export type InsertUserBadge = typeof userBadges.$inferInsert;
+export type SelectUserBadge = typeof userBadges.$inferSelect;
 
 // Relations
 export const communitiesRelations = relations(communities, ({ one }) => ({
@@ -418,54 +506,12 @@ export const forumMemberRelations = relations(forumMembers, ({ one }) => ({
   }),
 }));
 
-// Schemas
-export const insertOfficialSchema = createInsertSchema(officials);
-export const insertCommunitySchema = createInsertSchema(communities);
-export const insertResourceSchema = createInsertSchema(resources);
-export const insertForumSchema = createInsertSchema(forums);
-export const insertPostSchema = createInsertSchema(posts);
-export const insertCommentSchema = createInsertSchema(comments);
-export const insertVoteSchema = createInsertSchema(votes);
-export const insertParliamentarySessionSchema = createInsertSchema(parliamentarySessions);
-export const insertAttendanceSchema = createInsertSchema(attendance);
-export const insertBillSchema = createInsertSchema(bills);
-export const insertVotingRecordSchema = createInsertSchema(votingRecords);
-export const insertDevelopmentProjectSchema = createInsertSchema(developmentProjects);
-export const insertForumModeratorSchema = createInsertSchema(forumModerators);
-export const insertForumMemberSchema = createInsertSchema(forumMembers);
-export const insertFeedbackSchema = createInsertSchema(feedbacks);
-
-// Types
-export type InsertOfficial = typeof officials.$inferInsert;
-export type SelectOfficial = typeof officials.$inferSelect;
-export type InsertCommunity = typeof communities.$inferInsert;
-export type SelectCommunity = typeof communities.$inferSelect;
-export type InsertResource = typeof resources.$inferInsert;
-export type SelectResource = typeof resources.$inferSelect;
-export type InsertForum = typeof forums.$inferInsert;
-export type SelectForum = typeof forums.$inferSelect;
-export type InsertPost = typeof posts.$inferInsert;
-export type SelectPost = typeof posts.$inferSelect;
-export type InsertComment = typeof comments.$inferInsert;
-export type SelectComment = typeof comments.$inferSelect;
-export type InsertVote = typeof votes.$inferInsert;
-export type SelectVote = typeof votes.$inferSelect;
-export type InsertParliamentarySession = typeof parliamentarySessions.$inferInsert;
-export type SelectParliamentarySession = typeof parliamentarySessions.$inferSelect;
-export type InsertAttendance = typeof attendance.$inferInsert;
-export type SelectAttendance = typeof attendance.$inferSelect;
-export type InsertBill = typeof bills.$inferInsert;
-export type SelectBill = typeof bills.$inferSelect;
-export type InsertVotingRecord = typeof votingRecords.$inferInsert;
-export type SelectVotingRecord = typeof votingRecords.$inferSelect;
-export type InsertDevelopmentProject = typeof developmentProjects.$inferInsert;
-export type SelectDevelopmentProject = typeof developmentProjects.$inferSelect;
-export type InsertForumModerator = typeof forumModerators.$inferInsert;
-export type SelectForumModerator = typeof forumModerators.$inferSelect;
-export type InsertForumMember = typeof forumMembers.$inferInsert;
-export type SelectForumMember = typeof forumMembers.$inferSelect;
-export type InsertFeedback = typeof feedbacks.$inferInsert;
-export type SelectFeedback = typeof feedbacks.$inferSelect;
+export const emergencyServiceRelations = relations(emergencyServices, ({ one }) => ({
+  verifier: one(users, {
+    fields: [emergencyServices.verifiedBy],
+    references: [users.id],
+  }),
+}));
 
 export const officialsRelations = relations(officials, ({ many }) => ({
   constituents: many(users),
@@ -484,24 +530,10 @@ export const usersRelations = relations(users, ({ many }) => ({
   eventAttendance: many(eventAttendance),
   whatsappNotifications: many(whatsappNotifications),
   notificationPreferences: many(notificationPreferences),
+  points: many(points),
+  badges: many(userBadges),
 }));
 
-export const insertEventSchema = createInsertSchema(events);
-export const insertEventAttendanceSchema = createInsertSchema(eventAttendance);
-export const insertWhatsappNotificationSchema = createInsertSchema(whatsappNotifications);
-export const insertNotificationPreferenceSchema = createInsertSchema(notificationPreferences);
-
-// Add new types
-export type InsertEvent = typeof events.$inferInsert;
-export type SelectEvent = typeof events.$inferSelect;
-export type InsertEventAttendance = typeof eventAttendance.$inferInsert;
-export type SelectEventAttendance = typeof eventAttendance.$inferSelect;
-export type InsertWhatsappNotification = typeof whatsappNotifications.$inferInsert;
-export type SelectWhatsappNotification = typeof whatsappNotifications.$inferSelect;
-export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;
-export type SelectNotificationPreference = typeof notificationPreferences.$inferSelect;
-
-// Add relations for the new tables
 export const eventRelations = relations(events, ({ one, many }) => ({
   organizer: one(users, {
     fields: [events.organizerId],
@@ -544,6 +576,28 @@ export const notificationPreferenceRelations = relations(notificationPreferences
   forum: one(forums, {
     fields: [notificationPreferences.forumId],
     references: [forums.id],
+  }),
+}));
+
+export const pointsRelations = relations(points, ({ one }) => ({
+  user: one(users, {
+    fields: [points.userId],
+    references: [users.id],
+  }),
+}));
+
+export const badgesRelations = relations(badges, ({ many }) => ({
+  userBadges: many(userBadges),
+}));
+
+export const userBadgesRelations = relations(userBadges, ({ one }) => ({
+  user: one(users, {
+    fields: [userBadges.userId],
+    references: [users.id],
+  }),
+  badge: one(badges, {
+    fields: [userBadges.badgeId],
+    references: [badges.id],
   }),
 }));
 
@@ -598,6 +652,34 @@ export type Database = {
       feedbacks: {
         Row: SelectFeedback;
         Insert: InsertFeedback;
+      };
+      events: {
+        Row: SelectEvent;
+        Insert: InsertEvent;
+      };
+      event_attendance: {
+        Row: SelectEventAttendance;
+        Insert: InsertEventAttendance;
+      };
+      whatsapp_notifications: {
+        Row: SelectWhatsappNotification;
+        Insert: InsertWhatsappNotification;
+      };
+      notification_preferences: {
+        Row: SelectNotificationPreference;
+        Insert: InsertNotificationPreference;
+      };
+      points: {
+        Row: SelectPoint;
+        Insert: InsertPoint;
+      };
+      badges: {
+        Row: SelectBadge;
+        Insert: InsertBadge;
+      };
+      user_badges: {
+        Row: SelectUserBadge;
+        Insert: InsertUserBadge;
       };
     };
   };

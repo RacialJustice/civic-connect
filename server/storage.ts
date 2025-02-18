@@ -42,6 +42,12 @@ export interface IStorage {
   createEmergencyService(service: InsertEmergencyService): Promise<SelectEmergencyService>;
   updateEmergencyServiceStatus(id: number, status: string, updatedBy: string): Promise<SelectEmergencyService>;
   verifyEmergencyService(id: number, verifiedBy: string): Promise<SelectEmergencyService>;
+
+  // Gamification methods
+  getPoints(userId: string): Promise<any[]>;
+  getBadgesForUser(userId: string): Promise<any[]>;
+  awardPoints(params: { userId: string; amount: number; reason: string; category: string }): Promise<any>;
+  awardBadge(params: { userId: string; badgeId: string }): Promise<any>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -304,7 +310,6 @@ export class SupabaseStorage implements IStorage {
     return data;
   }
 
-
   async addForumModerator(moderator: InsertForumModerator): Promise<SelectForumModerator> {
     const { data, error } = await supabase
       .from('forumModerators')
@@ -404,6 +409,60 @@ export class SupabaseStorage implements IStorage {
       .eq('id', id)
       .select()
       .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async getPoints(userId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('points')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getBadgesForUser(userId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('user_badges')
+      .select(`
+        *,
+        badges (*)
+      `)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return data;
+  }
+
+  async awardPoints(params: { userId: string; amount: number; reason: string; category: string }): Promise<any> {
+    const { data, error } = await supabase
+      .from('points')
+      .insert([{
+        user_id: params.userId,
+        amount: params.amount,
+        reason: params.reason,
+        category: params.category
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async awardBadge(params: { userId: string; badgeId: string }): Promise<any> {
+    const { data, error } = await supabase
+      .from('user_badges')
+      .insert([{
+        user_id: params.userId,
+        badge_id: params.badgeId,
+        awarded_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
     if (error) throw error;
     return data;
   }

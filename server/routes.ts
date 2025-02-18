@@ -6,6 +6,7 @@ import { storage } from "./storage";
 import { insertFeedbackSchema } from "@shared/schema";
 import type { IncomingMessage } from "http";
 import type { SelectUser } from "@shared/schema";
+import gamificationRouter from "./routes/gamification";
 import { 
   isValidCounty, 
   isValidConstituencyInCounty, 
@@ -23,6 +24,9 @@ const clients = new Map<WebSocket, { userId: number, username: string }>();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
+
+  // Register the gamification routes
+  app.use("/api", gamificationRouter);
 
   app.get("/api/leaders", async (req, res) => {
     try {
@@ -117,19 +121,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
-
-app.get("/api/reports/community/:id", async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.sendStatus(401);
-  }
-  
-  const forumId = parseInt(req.params.id);
-  const pdfBytes = await generateCommunityReport(forumId);
-  
-  res.setHeader('Content-Type', 'application/pdf');
-  res.send(Buffer.from(pdfBytes));
-});
-
 
     const { ward, constituency, village } = req.body;
 
@@ -382,75 +373,75 @@ app.get("/api/reports/community/:id", async (req, res) => {
   });
 
   app.get("/api/reports/parliament/:id", async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.sendStatus(401);
-  }
-  
-  const sessionId = parseInt(req.params.id);
-  const pdfBytes = await generateParliamentReport(sessionId);
-  
-  res.setHeader('Content-Type', 'application/pdf');
-  res.send(Buffer.from(pdfBytes));
-});
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+    
+    const sessionId = parseInt(req.params.id);
+    const pdfBytes = await generateParliamentReport(sessionId);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.send(Buffer.from(pdfBytes));
+  });
 
-app.get("/api/reports/project/:id", async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.sendStatus(401);
-  }
-  
-  const projectId = parseInt(req.params.id);
-  const pdfBytes = await generateProjectReport(projectId);
-  
-  res.setHeader('Content-Type', 'application/pdf');
-  res.send(Buffer.from(pdfBytes));
-});
+  app.get("/api/reports/project/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+    
+    const projectId = parseInt(req.params.id);
+    const pdfBytes = await generateProjectReport(projectId);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.send(Buffer.from(pdfBytes));
+  });
 
-app.post("/api/donations/mpesa/initiate", async (req, res) => {
-  try {
-    const { phoneNumber, amount, reference } = req.body;
-    const result = await initiateSTKPush(phoneNumber, amount, reference);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to initiate MPesa payment" });
-  }
-});
-
-app.post("/api/donations/mpesa/callback", async (req, res) => {
-  try {
-    const { Body: { stkCallback } } = req.body;
-    // Store transaction details in database
-    res.json({ received: true });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to process callback" });
-  }
-});
-
-app.post("/api/donations/verify", async (req, res) => {
+  app.post("/api/donations/mpesa/initiate", async (req, res) => {
     try {
-      const { transaction_id } = req.body;
-      
-      const response = await fetch(
-        `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`
-          }
-        }
-      );
-      
-      const data = await response.json();
-      
-      if (data.status === "success") {
-        // Store donation record in database
-        // Send thank you notification
-        res.json({ status: "success" });
-      } else {
-        res.status(400).json({ error: "Payment verification failed" });
-      }
+      const { phoneNumber, amount, reference } = req.body;
+      const result = await initiateSTKPush(phoneNumber, amount, reference);
+      res.json(result);
     } catch (error) {
-      res.status(500).json({ error: "Server error" });
+      res.status(500).json({ error: "Failed to initiate MPesa payment" });
     }
   });
+
+  app.post("/api/donations/mpesa/callback", async (req, res) => {
+    try {
+      const { Body: { stkCallback } } = req.body;
+      // Store transaction details in database
+      res.json({ received: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to process callback" });
+    }
+  });
+
+  app.post("/api/donations/verify", async (req, res) => {
+      try {
+        const { transaction_id } = req.body;
+        
+        const response = await fetch(
+          `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`
+            }
+          }
+        );
+        
+        const data = await response.json();
+        
+        if (data.status === "success") {
+          // Store donation record in database
+          // Send thank you notification
+          res.json({ status: "success" });
+        } else {
+          res.status(400).json({ error: "Payment verification failed" });
+        }
+      } catch (error) {
+        res.status(500).json({ error: "Server error" });
+      }
+    });
 
   app.get("/api/events/:id", async (req, res) => {
     const event = mockEvents.find(e => e.id === parseInt(req.params.id));
@@ -465,68 +456,68 @@ app.post("/api/donations/verify", async (req, res) => {
   const eventNotifications = new Map<string, Set<number>>();
 
   app.post("/api/polls", async (req, res) => {
-  if (!req.isAuthenticated() || req.user?.role !== 'admin') {
-    return res.sendStatus(403);
-  }
-  // Rest of poll creation logic
-});
-
-app.post("/api/events", async (req, res) => {
-  if (!req.isAuthenticated() || req.user?.role !== 'admin') {
-    return res.sendStatus(403);
-  }
-  // Rest of event creation logic
-});
-
-app.post("/api/events/:id/register", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.sendStatus(401);
+    if (!req.isAuthenticated() || req.user?.role !== 'admin') {
+      return res.sendStatus(403);
     }
-
-    const eventId = parseInt(req.params.id);
-    const userId = req.user!.id;
-    const key = `${eventId}`;
-
-    if (!eventRegistrations.has(key)) {
-      eventRegistrations.set(key, new Set());
-    }
-
-    const registrations = eventRegistrations.get(key)!;
-    const isRegistered = registrations.has(userId);
-
-    if (isRegistered) {
-      registrations.delete(userId);
-    } else {
-      registrations.add(userId);
-    }
-
-    res.json({ registered: !isRegistered });
+    // Rest of poll creation logic
   });
+
+  app.post("/api/events", async (req, res) => {
+    if (!req.isAuthenticated() || req.user?.role !== 'admin') {
+      return res.sendStatus(403);
+    }
+    // Rest of event creation logic
+  });
+
+  app.post("/api/events/:id/register", async (req, res) => {
+      if (!req.isAuthenticated()) {
+        return res.sendStatus(401);
+      }
+      
+      const eventId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const key = `${eventId}`;
+      
+      if (!eventRegistrations.has(key)) {
+        eventRegistrations.set(key, new Set());
+      }
+      
+      const registrations = eventRegistrations.get(key)!;
+      const isRegistered = registrations.has(userId);
+      
+      if (isRegistered) {
+        registrations.delete(userId);
+      } else {
+        registrations.add(userId);
+      }
+      
+      res.json({ registered: !isRegistered });
+    });
 
   app.post("/api/events/:id/notify", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.sendStatus(401);
-    }
-
-    const eventId = parseInt(req.params.id);
-    const userId = req.user!.id;
-    const key = `${eventId}`;
-
-    if (!eventNotifications.has(key)) {
-      eventNotifications.set(key, new Set());
-    }
-
-    const notifications = eventNotifications.get(key)!;
-    const isNotified = notifications.has(userId);
-
-    if (isNotified) {
-      notifications.delete(userId);
-    } else {
-      notifications.add(userId);
-    }
-
-    res.json({ notified: !isNotified });
-  });
+      if (!req.isAuthenticated()) {
+        return res.sendStatus(401);
+      }
+      
+      const eventId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const key = `${eventId}`;
+      
+      if (!eventNotifications.has(key)) {
+        eventNotifications.set(key, new Set());
+      }
+      
+      const notifications = eventNotifications.get(key)!;
+      const isNotified = notifications.has(userId);
+      
+      if (isNotified) {
+        notifications.delete(userId);
+      } else {
+        notifications.add(userId);
+      }
+      
+      res.json({ notified: !isNotified });
+    });
 
   const httpServer = createServer(app);
 
@@ -618,4 +609,29 @@ app.post("/api/events/:id/register", async (req, res) => {
   }
 
   return httpServer;
+}
+
+async function generateCommunityReport(forumId: number): Promise<Buffer> {
+  //Implementation to generate PDF report for community
+  throw new Error("Function not implemented.");
+}
+
+async function generateParliamentReport(sessionId: number): Promise<Buffer> {
+  //Implementation to generate PDF report for parliament
+  throw new Error("Function not implemented.");
+}
+
+async function generateProjectReport(projectId: number): Promise<Buffer> {
+  //Implementation to generate PDF report for project
+  throw new Error("Function not implemented.");
+}
+
+async function initiateSTKPush(phoneNumber: string, amount: number, reference: string): Promise<any> {
+  //Implementation for initiating stk push
+  throw new Error("Function not implemented.");
+}
+
+function validateWardInConstituency(ward: string, constituency: string): boolean {
+    //Implementation for validating ward in constituency
+    throw new Error("Function not implemented.");
 }
