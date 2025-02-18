@@ -344,6 +344,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       filteredEvents = filteredEvents.filter(e => e.village === village);
     }
 
+    // Add registration and notification status if user is authenticated
+    if (req.isAuthenticated()) {
+      const userId = req.user!.id;
+      filteredEvents = filteredEvents.map(event => ({
+        ...event,
+        isRegistered: eventRegistrations.get(`${event.id}`)?.has(userId) ?? false,
+        isNotified: eventNotifications.get(`${event.id}`)?.has(userId) ?? false,
+      }));
+    }
+
     res.json(filteredEvents);
   });
 
@@ -353,6 +363,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ error: "Event not found" });
     }
     res.json(event);
+  });
+
+  // Track registrations and notifications (in-memory for demo)
+  const eventRegistrations = new Map<string, Set<number>>();
+  const eventNotifications = new Map<string, Set<number>>();
+
+  app.post("/api/events/:id/register", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    const eventId = parseInt(req.params.id);
+    const userId = req.user!.id;
+    const key = `${eventId}`;
+
+    if (!eventRegistrations.has(key)) {
+      eventRegistrations.set(key, new Set());
+    }
+
+    const registrations = eventRegistrations.get(key)!;
+    const isRegistered = registrations.has(userId);
+
+    if (isRegistered) {
+      registrations.delete(userId);
+    } else {
+      registrations.add(userId);
+    }
+
+    res.json({ registered: !isRegistered });
+  });
+
+  app.post("/api/events/:id/notify", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    const eventId = parseInt(req.params.id);
+    const userId = req.user!.id;
+    const key = `${eventId}`;
+
+    if (!eventNotifications.has(key)) {
+      eventNotifications.set(key, new Set());
+    }
+
+    const notifications = eventNotifications.get(key)!;
+    const isNotified = notifications.has(userId);
+
+    if (isNotified) {
+      notifications.delete(userId);
+    } else {
+      notifications.add(userId);
+    }
+
+    res.json({ notified: !isNotified });
   });
 
   const httpServer = createServer(app);

@@ -10,6 +10,34 @@ import { formatDistance } from "date-fns";
 export default function EventsPage() {
   const { user } = useAuth();
 
+  const registerMutation = useMutation({
+    mutationFn: async (eventId: number) => {
+      const res = await fetch(`/api/events/${eventId}/register`, {
+        method: 'POST',
+      });
+      if (!res.ok) throw new Error('Failed to register');
+      return res.json();
+    },
+  });
+
+  const notifyMutation = useMutation({
+    mutationFn: async (eventId: number) => {
+      const res = await fetch(`/api/events/${eventId}/notify`, {
+        method: 'POST',
+      });
+      if (!res.ok) throw new Error('Failed to update notification');
+      return res.json();
+    },
+  });
+
+  const handleRegister = (eventId: number) => {
+    registerMutation.mutate(eventId);
+  };
+
+  const handleNotify = (eventId: number) => {
+    notifyMutation.mutate(eventId);
+  };
+
   const { data: events, isLoading } = useQuery<SelectEvent[]>({
     queryKey: ["/api/events", user?.constituency, user?.ward, user?.village],
     queryFn: async () => {
@@ -85,6 +113,20 @@ export default function EventsPage() {
                     <span>{event.location}</span>
                   </div>
                 )}
+              </div>
+            <div className="flex gap-2 mt-4">
+                <Button 
+                  variant={event.isRegistered ? "secondary" : "default"}
+                  onClick={() => handleRegister(event.id)}
+                >
+                  {event.isRegistered ? 'Registered' : 'Register to Attend'}
+                </Button>
+                <Button
+                  variant={event.isNotified ? "secondary" : "outline"}
+                  onClick={() => handleNotify(event.id)}
+                >
+                  {event.isNotified ? 'Notifications On' : 'Get Notified'}
+                </Button>
               </div>
             </CardContent>
           </Card>
