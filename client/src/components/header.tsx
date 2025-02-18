@@ -31,6 +31,14 @@ export function Header() {
     { href: "/dashboard", label: "Dashboard" },
   ];
 
+  const resourceLinks = [
+    { href: "/documents", label: "Documents" },
+    { href: "/calendar", label: "Calendar" },
+    { href: "/reports", label: "Reports" },
+    { href: "/local-updates", label: "Local Updates" },
+    { href: "/projects", label: "Development Projects" },
+  ];
+
   const NavContent = () => (
     <>
       {navLinks.map((link) => (
@@ -40,6 +48,18 @@ export function Header() {
           </span>
         </Link>
       ))}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <span className="hover:text-primary-foreground/80 cursor-pointer">Resources</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {resourceLinks.map((link) => (
+            <Link key={link.href} href={link.href}>
+              <DropdownMenuItem>{link.label}</DropdownMenuItem>
+            </Link>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </>
   );
 
@@ -63,7 +83,23 @@ export function Header() {
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-4 p-4">
-                  <NavContent />
+                  {navLinks.map((link) => (
+                    <Link key={link.href} href={link.href}>
+                      <span className="block px-2 py-1.5 hover:bg-accent rounded-md">
+                        {link.label}
+                      </span>
+                    </Link>
+                  ))}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-sm text-muted-foreground mb-1">Resources</h3>
+                    {resourceLinks.map((link) => (
+                      <Link key={link.href} href={link.href}>
+                        <span className="block px-2 py-1.5 hover:bg-accent rounded-md">
+                          {link.label}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                   <div className="flex items-center gap-2 pt-4 border-t">
                     <span>Welcome, {user?.name || 'User'}</span>
                     <Button
