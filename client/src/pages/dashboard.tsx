@@ -86,6 +86,13 @@ export default function Dashboard() {
               leaders={leaders}
               feedbacks={feedbackQueries.data || []}
             />
+            <BudgetAllocationChart />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 mt-6">
+            <ParticipationChart />
+            <AttendanceChart />
+          </div>
+          <div className="mt-6">
             <Chat />
           </div>
         </main>
