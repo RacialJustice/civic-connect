@@ -25,6 +25,7 @@ export function Navigation() {
   const mainNavLinks = [
     { href: "/", label: "Home" },
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/emergency-services", label: "Emergency Services" },
   ];
 
   const engagementLinks = [
@@ -32,12 +33,21 @@ export function Navigation() {
     { href: "/forums", label: "Forums" },
     { href: "/events", label: "Events" },
     { href: "/polls", label: "Polls & Surveys" },
+    { href: "/community", label: "Community" },
   ];
 
   const resourcesLinks = [
     { href: "/documents", label: "Documents" },
     { href: "/calendar", label: "Calendar" },
     { href: "/reports", label: "Reports" },
+    { href: "/local-updates", label: "Local Updates" },
+    { href: "/projects", label: "Development Projects" },
+  ];
+
+  const servicesLinks = [
+    { href: "/services/permits", label: "Permits & Licenses" },
+    { href: "/services/payments", label: "Payments" },
+    { href: "/services/support", label: "Support" },
   ];
 
   const accountLinks = [
@@ -80,6 +90,7 @@ export function Navigation() {
       ))}
       <NavDropdown label="Engagement" links={engagementLinks} />
       <NavDropdown label="Resources" links={resourcesLinks} />
+      <NavDropdown label="Services" links={servicesLinks} />
       <NavDropdown label="Account" links={accountLinks} />
       {user?.role === "admin" && <NavDropdown label="Admin" links={adminLinks} />}
     </>
@@ -119,6 +130,7 @@ export function Navigation() {
                   <MobileNavLinks links={mainNavLinks} label="Main" />
                   <MobileNavLinks links={engagementLinks} label="Engagement" />
                   <MobileNavLinks links={resourcesLinks} label="Resources" />
+                  <MobileNavLinks links={servicesLinks} label="Services" />
                   <MobileNavLinks links={accountLinks} label="Account" />
                   {user?.role === "admin" && (
                     <MobileNavLinks links={adminLinks} label="Admin" />
