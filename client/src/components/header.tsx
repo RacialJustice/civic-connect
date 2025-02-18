@@ -87,7 +87,12 @@ export function Header() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative">
-                      <UserCircle className="h-5 w-5" />
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.profileImage} alt={user?.name || 'User'} />
+                        <AvatarFallback>
+                          <UserCircle className="h-5 w-5" />
+                        </AvatarFallback>
+                      </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
