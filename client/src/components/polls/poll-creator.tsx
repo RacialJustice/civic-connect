@@ -5,7 +5,6 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLocation } from 'wouter';
-import { useLocation } from 'wouter';
 
 export function PollCreator() {
   const { user } = useAuth();
