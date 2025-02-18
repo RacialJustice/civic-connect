@@ -1,13 +1,14 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
+import { useLocation } from 'wouter';
 
 export function PollCreator() {
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);
 
