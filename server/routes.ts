@@ -118,6 +118,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.sendStatus(401);
     }
 
+app.get("/api/reports/community/:id", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.sendStatus(401);
+  }
+  
+  const forumId = parseInt(req.params.id);
+  const pdfBytes = await generateCommunityReport(forumId);
+  
+  res.setHeader('Content-Type', 'application/pdf');
+  res.send(Buffer.from(pdfBytes));
+});
+
+
     const { ward, constituency, village } = req.body;
 
     try {
