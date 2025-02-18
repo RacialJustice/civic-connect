@@ -6,8 +6,13 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
 export function PollCreator() {
+  const { user } = useAuth();
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);
+
+  if (user?.role !== 'admin') {
+    return null;
+  }
 
   const createPoll = useMutation({
     mutationFn: async (data: any) => {

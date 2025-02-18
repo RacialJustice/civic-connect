@@ -464,7 +464,21 @@ app.post("/api/donations/verify", async (req, res) => {
   const eventRegistrations = new Map<string, Set<number>>();
   const eventNotifications = new Map<string, Set<number>>();
 
-  app.post("/api/events/:id/register", async (req, res) => {
+  app.post("/api/polls", async (req, res) => {
+  if (!req.isAuthenticated() || req.user?.role !== 'admin') {
+    return res.sendStatus(403);
+  }
+  // Rest of poll creation logic
+});
+
+app.post("/api/events", async (req, res) => {
+  if (!req.isAuthenticated() || req.user?.role !== 'admin') {
+    return res.sendStatus(403);
+  }
+  // Rest of event creation logic
+});
+
+app.post("/api/events/:id/register", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }

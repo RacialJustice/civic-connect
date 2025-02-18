@@ -11,6 +11,7 @@ import { formatDistance } from "date-fns";
 
 export default function EventsPage() {
   const { user } = useAuth();
+  const canManageEvents = user?.role === 'admin';
 
   const registerMutation = useMutation({
     mutationFn: async (eventId: number) => {
