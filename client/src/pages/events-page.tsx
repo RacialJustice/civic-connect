@@ -80,12 +80,13 @@ export default function EventsPage() {
       if (!res.ok) throw new Error("Failed to fetch events");
       const allEvents = await res.json();
       
-      const twelveMonthsAgo = new Date();
-      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+      const now = new Date();
+      const twelveMonthsFromNow = new Date();
+      twelveMonthsFromNow.setMonth(now.getMonth() + 12);
       
       return allEvents.filter((event: SelectEvent) => {
         const eventDate = new Date(event.startTime);
-        return event.status === 'upcoming' && eventDate >= twelveMonthsAgo;
+        return event.status === 'upcoming' && eventDate >= now && eventDate <= twelveMonthsFromNow;
       });
     },
     enabled: !!user?.constituency,
