@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import { AuthProvider } from "./hooks/use-auth";
 import { ChatProvider } from "./hooks/use-chat";
+import { ThemeProvider } from "./hooks/use-theme";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
@@ -57,16 +58,18 @@ function Router() {
 function App() {
   return (
     <I18nextProvider i18n={i18n}>
-      <QueryClientProvider client={queryClient}>
-        <SessionContextProvider supabaseClient={supabase}>
-          <AuthProvider>
-            <ChatProvider>
-              <Router />
-              <Toaster />
-            </ChatProvider>
-          </AuthProvider>
-        </SessionContextProvider>
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="system" storageKey="kenya-civic-theme">
+        <QueryClientProvider client={queryClient}>
+          <SessionContextProvider supabaseClient={supabase}>
+            <AuthProvider>
+              <ChatProvider>
+                <Router />
+                <Toaster />
+              </ChatProvider>
+            </AuthProvider>
+          </SessionContextProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </I18nextProvider>
   );
 }

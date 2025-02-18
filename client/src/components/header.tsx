@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { UserCircle } from "lucide-react";
+import { ThemeSwitcher } from "./theme-switcher";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -72,57 +73,61 @@ export function Header() {
           </Link>
 
           {isMobile ? (
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col gap-4 p-4">
-                  {navLinks.map((link) => (
-                    <Link key={link.href} href={link.href}>
-                      <span className="block px-2 py-1.5 hover:bg-accent rounded-md">
-                        {link.label}
-                      </span>
-                    </Link>
-                  ))}
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-sm text-muted-foreground mb-1">Resources</h3>
-                    {resourceLinks.map((link) => (
+            <div className="flex items-center gap-2">
+              <ThemeSwitcher />
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-4 p-4">
+                    {navLinks.map((link) => (
                       <Link key={link.href} href={link.href}>
                         <span className="block px-2 py-1.5 hover:bg-accent rounded-md">
                           {link.label}
                         </span>
                       </Link>
                     ))}
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-sm text-muted-foreground mb-1">Resources</h3>
+                      {resourceLinks.map((link) => (
+                        <Link key={link.href} href={link.href}>
+                          <span className="block px-2 py-1.5 hover:bg-accent rounded-md">
+                            {link.label}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2 pt-4 border-t">
+                      <span>Welcome, {user?.name || 'User'}</span>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => logoutMutation.mutate()}
+                        disabled={logoutMutation.isPending}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 pt-4 border-t">
-                    <span>Welcome, {user?.name || 'User'}</span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => logoutMutation.mutate()}
-                      disabled={logoutMutation.isPending}
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Logout
-                    </Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetContent>
+              </Sheet>
+            </div>
           ) : (
             <div className="flex items-center gap-4">
               <NavContent />
               <div className="flex items-center gap-2 ml-4">
+                <ThemeSwitcher />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative">
-                      <UserCircle className="h-5 w-5" /> {/* Simplified Avatar */}
+                      <UserCircle className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
