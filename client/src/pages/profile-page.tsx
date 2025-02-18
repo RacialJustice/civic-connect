@@ -42,6 +42,13 @@ export default function ProfilePage() {
 
   return (
     <div>
+      {user?.role === 'admin' && (
+        <div className="container mx-auto px-4 pt-4">
+          <Link href="/profile/dashboard">
+            <Button variant="outline">Admin Dashboard</Button>
+          </Link>
+        </div>
+      )}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto space-y-6">
           <Card>
