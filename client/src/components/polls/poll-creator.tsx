@@ -1,27 +1,19 @@
-import * as React from 'react';
+
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import { useLocation } from 'wouter';
-
-const { useState } = React;
 
 export function PollCreator() {
-  try {
-    const { user } = useAuth();
-    const [, setLocation] = useLocation();
-    const [question, setQuestion] = useState('');
-    const [options, setOptions] = useState(['', '']);
+  const { user } = useAuth();
+  const [question, setQuestion] = useState('');
+  const [options, setOptions] = useState(['', '']);
 
-    if (!user) {
-      return null;
-    }
-
-    if (user.role !== 'admin') {
-      return null;
-    }
+  if (user?.role !== 'admin') {
+    return null;
+  }
 
   const createPoll = useMutation({
     mutationFn: async (data: any) => {
@@ -60,8 +52,4 @@ export function PollCreator() {
       </Button>
     </div>
   );
-  } catch (error) {
-    console.error('PollCreator error:', error);
-    return null;
-  }
 }

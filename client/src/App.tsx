@@ -1,5 +1,4 @@
-import React from "react";
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -56,26 +55,8 @@ function Router() {
 }
 
 function App() {
-  const [theme, setTheme] = React.useState<'light' | 'dark'>(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'light';
-  });
-
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? 'dark' : 'light');
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
   return (
     <I18nextProvider i18n={i18n}>
-      <div className={theme} data-theme={theme}>
       <QueryClientProvider client={queryClient}>
         <SessionContextProvider supabaseClient={supabase}>
           <AuthProvider>
@@ -87,7 +68,6 @@ function App() {
           </AuthProvider>
         </SessionContextProvider>
       </QueryClientProvider>
-      </div>
     </I18nextProvider>
   );
 }
