@@ -8,5 +8,16 @@ export const apiLimiter = rateLimit({
 
 export const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5 // limit each IP to 5 failed login attempts per hour
+  max: 5, // limit each IP to 5 failed login attempts per hour
+  message: { error: 'Too many login attempts. Please try again later.' }
+});
+
+export const forumLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 20 // limit posts/comments creation
+});
+
+export const donationLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  max: 50 // limit donation attempts
 });

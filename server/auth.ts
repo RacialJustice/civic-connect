@@ -17,14 +17,20 @@ const SessionStore = MemoryStore(session);
 export function setupAuth(app: Express) {
   app.use(session({
     store: new SessionStore({
-      checkPeriod: 86400000 // prune expired entries every 24h
+      checkPeriod: 86400000, // prune expired entries every 24h
+      ttl: 24 * 60 * 60 // TTL in seconds
     }),
     secret: process.env.SESSION_SECRET || 'keyboard cat',
+    name: 'sessionId',
     resave: false,
     saveUninitialized: false,
+    rolling: true,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      path: '/'
     }
   }));
 
