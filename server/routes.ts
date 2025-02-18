@@ -291,6 +291,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mock events data
+  const mockEvents = [
+    {
+      id: 1,
+      title: "Town Hall Meeting",
+      description: "Monthly town hall meeting to discuss local development projects",
+      type: "townhall",
+      format: "hybrid",
+      status: "upcoming",
+      startTime: "2024-02-25T14:00:00Z",
+      endTime: "2024-02-25T16:00:00Z",
+      location: "Community Center",
+      virtualLink: "https://meet.google.com/abc-defg-hij",
+      maxAttendees: 100,
+      requiresRegistration: true,
+      village: "Central Village",
+      ward: "Downtown Ward",
+      constituency: "Central Constituency",
+      county: "Sample County",
+    },
+    {
+      id: 2,
+      title: "Public Participation Forum",
+      description: "Discussion on the proposed infrastructure development",
+      type: "public_participation",
+      format: "physical",
+      status: "upcoming",
+      startTime: "2024-03-01T10:00:00Z",
+      endTime: "2024-03-01T13:00:00Z",
+      location: "Municipal Hall",
+      maxAttendees: 150,
+      requiresRegistration: true,
+      village: "East Village",
+      ward: "Eastern Ward",
+      constituency: "Central Constituency",
+      county: "Sample County",
+    }
+  ];
+
+  app.get("/api/events", async (req, res) => {
+    const { constituency, ward, village } = req.query;
+
+    let filteredEvents = [...mockEvents];
+    if (constituency) {
+      filteredEvents = filteredEvents.filter(e => e.constituency === constituency);
+    }
+    if (ward) {
+      filteredEvents = filteredEvents.filter(e => e.ward === ward);
+    }
+    if (village) {
+      filteredEvents = filteredEvents.filter(e => e.village === village);
+    }
+
+    res.json(filteredEvents);
+  });
+
+  app.get("/api/events/:id", async (req, res) => {
+    const event = mockEvents.find(e => e.id === parseInt(req.params.id));
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+    res.json(event);
+  });
+
   const httpServer = createServer(app);
 
   // Initialize WebSocket server with proper types

@@ -32,7 +32,8 @@ function Router() {
           <Route path="/profile" component={ProfilePage} />
           <Route path="/forums" component={ForumsPage} />
           <Route path="/forums/:id" component={ForumPage} />
-          <Route path="/events" component={EventsPage} /> {/* Added events route */}
+          <Route path="/events" component={EventsPage} />
+        <Route path="/events/:id" component={EventPage} /> {/* Added events route */}
           <Route component={NotFound} />
         </Switch>
       </Layout>
