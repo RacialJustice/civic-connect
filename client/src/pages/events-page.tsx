@@ -11,9 +11,14 @@ export default function EventsPage() {
   const { user } = useAuth();
 
   const { data: events, isLoading } = useQuery<SelectEvent[]>({
-    queryKey: ["/api/events", user?.constituency],
+    queryKey: ["/api/events", user?.constituency, user?.ward, user?.village],
     queryFn: async () => {
-      const res = await fetch(`/api/events?constituency=${user?.constituency}`);
+      const params = new URLSearchParams();
+      if (user?.constituency) params.append('constituency', user.constituency);
+      if (user?.ward) params.append('ward', user.ward);
+      if (user?.village) params.append('village', user.village);
+      
+      const res = await fetch(`/api/events?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch events");
       return res.json();
     },
