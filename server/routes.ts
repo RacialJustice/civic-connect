@@ -137,9 +137,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch("/api/user/location", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.sendStatus(401);
-    }
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser(req.headers.authorization?.split(' ')[1]);
+      if (error || !user) {
+        return res.sendStatus(401);
+      }
 
     const { ward, constituency, village } = req.body;
 
