@@ -30,6 +30,10 @@ export default function EventPage() {
     mutationFn: async (eventId: number) => {
       const res = await fetch(`/api/events/${eventId}/notify`, {
         method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       if (!res.ok) throw new Error('Failed to update notification');
       return res.json();
