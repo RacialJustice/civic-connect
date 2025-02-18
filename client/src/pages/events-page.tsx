@@ -80,7 +80,7 @@ export default function EventsPage() {
 
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-6">Local Events</h1>
+      <h1 className="text-3xl font-bold mb-6 pl-4">Local Events</h1>
       <div className="grid gap-4">
         {events?.map((event) => (
           <Card key={event.id}>
