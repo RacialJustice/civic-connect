@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useRoute } from "wouter";
+import { useLocation } from "wouter";
 import { type SelectEvent } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,8 +11,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
 export default function EventPage() {
-  const [, params] = useRoute("/events/:id");
-  const eventId = params?.id;
+  const [location] = useLocation();
+  const eventId = location.split('/')[2];
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -22,7 +22,8 @@ export default function EventPage() {
         method: 'POST',
         credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.id}`
         }
       });
       if (!res.ok) throw new Error('Failed to register');
