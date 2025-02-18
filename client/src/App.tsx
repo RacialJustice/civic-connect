@@ -21,7 +21,7 @@ import { Layout } from "./components/layout";
 import EventsPage from "./pages/events-page";
 import EventPage from "./pages/event-page";
 import NotificationsPage from "@/pages/notifications-page"; // Import the new component
-import i18n from './i18n'; // Import i18n instance
+import i18n from './lib/i18n'; // Import i18n instance
 import { I18nextProvider } from 'react-i18next';
 
 
