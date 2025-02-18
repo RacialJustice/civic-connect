@@ -23,7 +23,7 @@ import EventPage from "./pages/event-page";
 import NotificationsPage from "@/pages/notifications-page"; // Import the new component
 import i18n from './lib/i18n'; // Import i18n instance
 import { I18nextProvider } from 'react-i18next';
-import CreateEventPage from "@/pages/create-event"; // Import the new component
+import CreateEventPage from "@/pages/create-event-page"; // Import the new component
 
 
 function Router() {
