@@ -166,14 +166,6 @@ export default function Dashboard() {
         </div>
 
         <div className="mt-8 space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Community Polls</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PollCreator />
-            </CardContent>
-          </Card>
           <CalendarSync />
           <DocumentManager />
           <SocialMediaIntegration />
