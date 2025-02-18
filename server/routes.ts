@@ -143,9 +143,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.sendStatus(401);
       }
 
-    const { ward, constituency, village } = req.body;
+      const { ward, constituency, village } = req.body;
 
-    try {
       // Get county based on constituency
       const county = getCountyByConstituency(constituency);
       if (!constituency || !county) {
@@ -161,20 +160,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const user = await storage.updateUserLocation(req.user!.id, {
+      const updatedUser = await storage.updateUserLocation(user.id, {
         ward,
         constituency,
         county,
         village
       });
 
-      res.json(user);
+      res.json(updatedUser);
     } catch (error) {
       console.error('Error updating user location:', error);
       res.status(400).json({
         error: error instanceof Error ? error.message : "Failed to update location"
       });
     }
+  });
   });
 
   app.patch("/api/user/profile", async (req, res) => {
