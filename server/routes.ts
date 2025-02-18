@@ -283,7 +283,7 @@ app.get("/api/reports/community/:id", async (req, res) => {
   app.get("/api/forums", async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
-        return res.sendStatus(401);
+        return res.json([]);
       }
       
       const forums = await storage.getForumsByLocation({
