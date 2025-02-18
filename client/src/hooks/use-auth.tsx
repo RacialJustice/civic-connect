@@ -20,6 +20,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 function useLoginMutation() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   return useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
