@@ -20,6 +20,10 @@ export default function EventPage() {
     mutationFn: async (eventId: number) => {
       const res = await fetch(`/api/events/${eventId}/register`, {
         method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       if (!res.ok) throw new Error('Failed to register');
       return res.json();
