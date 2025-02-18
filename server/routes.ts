@@ -117,6 +117,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(projects);
   });
 
+  app.post("/api/admin/set-role", async (req, res) => {
+    const { email, role } = req.body;
+    try {
+      const { data: { user }, error } = await supabase.auth.admin.getUserByEmail(email);
+      if (error) throw error;
+
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        user.id,
+        { user_metadata: { role: 'admin' } }
+      );
+      
+      if (updateError) throw updateError;
+      res.json({ success: true });
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Failed to update role' });
+    }
+  });
+
   app.patch("/api/user/location", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
