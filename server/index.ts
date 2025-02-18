@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { createServer } from "http";
 
 const app = express();
 app.use(express.json());
@@ -65,10 +66,48 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client
-  const PORT = process.env.PORT || 5000;
-  server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT} (http://0.0.0.0:${PORT})`);
-  });
+  // Function to start the server with port finding
+  const startServer = async (initialPort: number) => {
+    let currentPort = initialPort;
+    const maxAttempts = 10;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const onError = (error: Error) => {
+            if (error["code"] === "EADDRINUSE") {
+              log(`Port ${currentPort} is in use, trying next port`);
+              currentPort++;
+              server.removeListener('error', onError);
+              resolve();
+            } else {
+              reject(error);
+            }
+          };
+
+          server.once('error', onError);
+          server.listen(currentPort, "0.0.0.0", () => {
+            log(`Server running on port ${currentPort} (http://0.0.0.0:${currentPort})`);
+            resolve();
+          });
+        });
+
+        // If we get here, the server started successfully
+        break;
+      } catch (error) {
+        if (attempt === maxAttempts - 1) {
+          log(`Failed to find an available port after ${maxAttempts} attempts`);
+          throw error;
+        }
+      }
+    }
+  };
+
+  // Start the server with initial port 5000
+  try {
+    await startServer(5000);
+  } catch (error) {
+    log(`Failed to start server: ${error.message}`);
+    process.exit(1);
+  }
 })();
