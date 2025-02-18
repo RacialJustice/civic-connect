@@ -77,7 +77,7 @@ export function Header() {
               <ThemeSwitcher />
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="outline" size="icon" className="border-primary-foreground/20">
                     <Menu className="h-6 w-6" />
                   </Button>
                 </SheetTrigger>
@@ -126,7 +126,7 @@ export function Header() {
                 <ThemeSwitcher />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="relative">
+                    <Button variant="outline" size="icon" className="border-primary-foreground/20">
                       <UserCircle className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
