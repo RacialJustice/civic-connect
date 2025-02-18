@@ -1,13 +1,10 @@
-
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
 import { Link } from "wouter";
 import { Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
-
 import { UserCircle } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -88,12 +85,7 @@ export function Header() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.profileImage} alt={user?.name || 'User'} />
-                        <AvatarFallback>
-                          <UserCircle className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserCircle className="h-5 w-5" /> {/* Simplified Avatar */}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
