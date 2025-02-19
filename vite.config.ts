@@ -12,7 +12,16 @@ export default defineConfig(({ mode }) => {
     root: './client',
     build: {
       outDir: '../dist',
-      emptyOutDir: true
+      emptyOutDir: true,
+      chunkSizeWarningLimit: 800,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+            ui: ['@radix-ui/react-dropdown-menu', '@radix-ui/react-slot', '@radix-ui/react-dialog'],
+          },
+        },
+      },
     },
     resolve: {
       alias: {
@@ -35,8 +44,8 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       'window.ENV': {
-        VITE_SUPABASE_URL: JSON.stringify(env.VITE_SUPABASE_URL || env.SUPABASE_URL),
-        VITE_SUPABASE_ANON_KEY: JSON.stringify(env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY)
+        VITE_SUPABASE_URL: env.VITE_SUPABASE_URL || env.SUPABASE_URL,
+        VITE_SUPABASE_ANON_KEY: env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY
       }
     }
   }
