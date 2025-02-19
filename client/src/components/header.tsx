@@ -74,24 +74,20 @@ export function Header() {
   const NavContent = () => (
     <>
       {navLinks.map((link) => (
-        <Link key={link.href} href={link.href}>
-          <a className="hover:text-primary-foreground/80 cursor-pointer">
+        <Button key={link.href} variant="ghost" asChild>
+          <Link href={link.href} className="hover:text-primary-foreground/80">
             {link.label}
-          </a>
-        </Link>
+          </Link>
+        </Button>
       ))}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="hover:text-primary-foreground/80 cursor-pointer">
-            Resources
-          </button>
+          <Button variant="ghost">Resources</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {resourceLinks.map((link) => (
             <DropdownMenuItem key={link.href} asChild>
-              <Link href={link.href}>
-                <a className="w-full">{link.label}</a>
-              </Link>
+              <Link href={link.href}>{link.label}</Link>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -128,20 +124,20 @@ export function Header() {
                   </SheetHeader>
                   <div className="flex flex-col gap-4 p-4">
                     {navLinks.map((link) => (
-                      <Link key={link.href} href={link.href}>
-                        <span className="block px-2 py-1.5 hover:bg-accent rounded-md">
+                      <Button key={link.href} variant="ghost" asChild>
+                        <Link href={link.href}>
                           {link.label}
-                        </span>
-                      </Link>
+                        </Link>
+                      </Button>
                     ))}
                     <div className="space-y-2">
                       <h3 className="font-semibold text-sm text-muted-foreground mb-1">Resources</h3>
                       {resourceLinks.map((link) => (
-                        <Link key={link.href} href={link.href}>
-                          <span className="block px-2 py-1.5 hover:bg-accent rounded-md">
+                        <Button key={link.href} variant="ghost" asChild className="w-full justify-start">
+                          <Link href={link.href}>
                             {link.label}
-                          </span>
-                        </Link>
+                          </Link>
+                        </Button>
                       ))}
                     </div>
                     <div className="flex items-center gap-2 pt-4 border-t">
@@ -186,9 +182,9 @@ export function Header() {
                       {user?.name || 'User'}
                     </span>
                     <DropdownMenuSeparator />
-                    <Link href="/profile">
-                      <DropdownMenuItem>Profile</DropdownMenuItem>
-                    </Link>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">Profile</Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => logoutMutation.mutate()}

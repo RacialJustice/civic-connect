@@ -34,8 +34,10 @@ export default defineConfig(({ mode }) => {
       }
     },
     define: {
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.SUPABASE_URL),
-      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.SUPABASE_ANON_KEY)
+      'window.ENV': {
+        VITE_SUPABASE_URL: JSON.stringify(env.VITE_SUPABASE_URL || env.SUPABASE_URL),
+        VITE_SUPABASE_ANON_KEY: JSON.stringify(env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY)
+      }
     }
   }
 })
