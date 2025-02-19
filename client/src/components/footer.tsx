@@ -1,14 +1,14 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Phone, AlertTriangle, CreditCard, HelpCircle, Heart } from "lucide-react";
+import { Phone, AlertTriangle, Heart, HelpCircle } from "lucide-react";
 
 export function Footer() {
   const emergencyNumbers = [
-    { name: "Police", number: "999" },
-    { name: "Ambulance", number: "112" },
-    { name: "Fire", number: "999" },
-    { name: "Child Helpline", number: "116" },
-    { name: "Gender Violence", number: "1195" }
+    { id: 1, name: "Police", number: "999" },
+    { id: 2, name: "Ambulance", number: "112" },
+    { id: 3, name: "Fire", number: "999" },
+    { id: 4, name: "Child Helpline", number: "116" },
+    { id: 5, name: "Gender Violence", number: "1195" }
   ];
 
   const paymentMethods = [
@@ -30,19 +30,15 @@ export function Footer() {
             </h3>
             <div className="space-y-3">
               {emergencyNumbers.map((contact) => (
-                <div key={contact.number} className="flex items-center gap-2">
+                <div key={contact.id} className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href={`tel:${contact.number}`}
-                    className="text-sm hover:underline"
-                  >
+                  <a href={`tel:${contact.number}`} className="text-sm hover:underline">
                     <span className="font-medium">{contact.number}</span>
-                    <span className="text-muted-foreground ml-2">
-                      ({contact.name})
-                    </span>
+                    <span className="text-muted-foreground ml-2">({contact.name})</span>
                   </a>
                 </div>
               ))}
+            </div>
             </div>
             <Button variant="link" asChild className="px-0">
               <Link href="/emergency-contacts">View all emergency services</Link>
