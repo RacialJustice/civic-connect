@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Routes, Route } from 'react-router-dom';
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -40,7 +40,7 @@ function Router() {
     <ErrorBoundary>
       <Layout>
         <Suspense fallback={<Loader />}>
-          <Switch>
+          <Routes>
             <Route path="/auth"><AuthPage /></Route>
             <Route path="/"><ProtectedRoute component={HomePage} /></Route>
             <Route path="/leaders"><ProtectedRoute component={LeadersPage} /></Route>
@@ -80,7 +80,7 @@ function Router() {
               <ProtectedRoute component={EmergencyAlertPage} />
             </Route>
             <Route><NotFound /></Route>
-          </Switch>
+          </Routes>
         </Suspense>
       </Layout>
     </ErrorBoundary>
@@ -96,7 +96,11 @@ function App() {
             <SessionContextProvider supabaseClient={supabase}>
               <AuthProvider>
                 <ChatProvider>
-                  <Router />
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                    </Routes>
+                  </Layout>
                   <Toaster />
                 </ChatProvider>
               </AuthProvider>
