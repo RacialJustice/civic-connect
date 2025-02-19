@@ -1,14 +1,11 @@
-import { Container } from '@/components/ui/container';
+import { PlaceholderContent } from "@/components/ui/placeholder-content";
 
-export function CalendarPage() {
+export default function CalendarPage() {
   return (
-    <Container>
-      <h1 className="text-3xl font-bold mb-6">Community Calendar</h1>
-      <div className="rounded-lg border bg-muted p-6">
-        <p className="text-muted-foreground">Calendar feature coming soon...</p>
-      </div>
-    </Container>
+    <PlaceholderContent
+      title="Community Calendar"
+      description="View and manage community events, meetings, and important dates. This feature is coming soon."
+      icon="calendar"
+    />
   );
 }
-
-export default CalendarPage;

@@ -1,12 +1,11 @@
-export function LocalUpdatesPage() {
+import { PlaceholderContent } from "@/components/ui/placeholder-content";
+
+export default function LocalUpdatesPage() {
   return (
-    <div className="container mx-auto px-6 py-8 md:px-8 lg:px-12">
-      <h1 className="text-3xl font-bold mb-6">Local Updates</h1>
-      <div className="rounded-lg border bg-card p-6">
-        <p className="text-muted-foreground">Local updates coming soon...</p>
-      </div>
-    </div>
+    <PlaceholderContent
+      title="Local Updates"
+      description="Stay informed about the latest news and updates in your community. This feature is coming soon."
+      icon="updates"
+    />
   );
 }
-
-export default LocalUpdatesPage;

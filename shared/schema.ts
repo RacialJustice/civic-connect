@@ -339,8 +339,21 @@ export const insertPointSchema = createInsertSchema(points);
 export const insertBadgeSchema = createInsertSchema(badges);
 export const insertUserBadgeSchema = createInsertSchema(userBadges);
 
+// Add new table for constituencies
+export const constituencies = pgTable("constituencies", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  code: text("code").notNull(),
+  countyId: integer("county_id").references(() => counties.id)
+});
+
+// Add to types
+export type InsertConstituency = typeof constituencies.$inferInsert;
+export type SelectConstituency = typeof constituencies.$inferSelect;
 
 // Types
+export type InsertUser = typeof users.$inferInsert;
+export type SelectUser = typeof users.$inferSelect;
 export type InsertOfficial = typeof officials.$inferInsert;
 export type SelectOfficial = typeof officials.$inferSelect;
 export type InsertCommunity = typeof communities.$inferInsert;
@@ -385,6 +398,8 @@ export type InsertBadge = typeof badges.$inferInsert;
 export type SelectBadge = typeof badges.$inferSelect;
 export type InsertUserBadge = typeof userBadges.$inferInsert;
 export type SelectUserBadge = typeof userBadges.$inferSelect;
+export type InsertConstituency = typeof constituencies.$inferInsert;
+export type SelectConstituency = typeof constituencies.$inferSelect;
 
 // Relations
 export const communitiesRelations = relations(communities, ({ one }) => ({
@@ -601,6 +616,18 @@ export const userBadgesRelations = relations(userBadges, ({ one }) => ({
   }),
 }));
 
+export const constituencyRelations = relations(constituencies, ({ one }) => ({
+  county: one(counties, {
+    fields: [constituencies.countyId],
+    references: [counties.id],
+  }),
+}));
+
+export const countyRelations = relations(counties, ({ many }) => ({
+  // ...existing relations...
+  constituencies: many(constituencies)
+}));
+
 // Add Database type for Supabase
 export type Database = {
   public: {
@@ -680,6 +707,10 @@ export type Database = {
       user_badges: {
         Row: SelectUserBadge;
         Insert: InsertUserBadge;
+      };
+      constituencies: {
+        Row: SelectConstituency;
+        Insert: InsertConstituency;
       };
     };
   };

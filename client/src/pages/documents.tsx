@@ -1,12 +1,11 @@
-export function DocumentsPage() {
+import { PlaceholderContent } from "@/components/ui/placeholder-content";
+
+export default function DocumentsPage() {
   return (
-    <div className="container mx-auto px-6 py-8 md:px-8 lg:px-12">
-      <h1 className="text-3xl font-bold mb-6">Documents</h1>
-      <div className="rounded-lg border bg-card p-6">
-        <p className="text-muted-foreground">Document repository coming soon...</p>
-      </div>
-    </div>
+    <PlaceholderContent
+      title="Documents & Resources"
+      description="Access important community documents, forms, and resources. This feature is coming soon."
+      icon="document"
+    />
   );
 }
-
-export default DocumentsPage;

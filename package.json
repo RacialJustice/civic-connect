@@ -5,9 +5,11 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
+    "test": "vitest",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node dist/server/index.js"
+    "start": "node dist/server/index.js",
+    "db:migrate": "tsx supabase/migrate.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -50,7 +52,6 @@
     "cmdk": "^1.0.0",
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
-    "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.7.0",
     "embla-carousel-react": "^8.3.0",
@@ -102,13 +103,15 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
+    "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.4",
     "esbuild": "^0.24.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
     "tsx": "^4.19.1",
     "typescript": "5.6.3",
-    "vite": "^5.4.9"
+    "vite": "^5.4.9",
+    "vitest": "^3.0.6"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

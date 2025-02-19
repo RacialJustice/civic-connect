@@ -1,12 +1,11 @@
-export function ProjectsPage() {
+import { PlaceholderContent } from "@/components/ui/placeholder-content";
+
+export default function ProjectsPage() {
   return (
-    <div className="container mx-auto px-6 py-8 md:px-8 lg:px-12">
-      <h1 className="text-3xl font-bold mb-6">Development Projects</h1>
-      <div className="rounded-lg border bg-card p-6">
-        <p className="text-muted-foreground">Projects feature coming soon...</p>
-      </div>
-    </div>
+    <PlaceholderContent
+      title="Development Projects"
+      description="Track and monitor development projects in your area. This feature is coming soon."
+      icon="projects"
+    />
   );
 }
-
-export default ProjectsPage;

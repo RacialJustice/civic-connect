@@ -21,7 +21,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { Layout } from "./components/layout";
 import EventsPage from "./pages/events-page";
 import EventPage from "./pages/event-page";
-import NotificationsPage from "@/pages/notifications-page";
+import NotificationsPage from "@/pages/profile/notifications-page";
 import i18n from './lib/i18n';
 import { I18nextProvider } from 'react-i18next';
 import CreateEventPage from "@/pages/create-event";

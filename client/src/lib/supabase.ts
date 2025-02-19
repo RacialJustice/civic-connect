@@ -1,3 +1,4 @@
+//client/src/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 import { type Database } from '@shared/schema';
 import { getEnv } from '@shared/env';
