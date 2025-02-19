@@ -36,21 +36,48 @@ export function LeadersPage() {
               <h2 className="text-2xl font-semibold capitalize">{level} Level Representatives</h2>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {levelLeaders?.map((leader) => (
-                  <div key={leader.id} className="rounded-lg border bg-card p-6">
+                  <div key={leader.id} className="rounded-lg border bg-card p-6 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-4">
-                      {leader.photo && (
-                        <img 
-                          src={leader.photo} 
-                          alt={leader.name}
-                          className="w-16 h-16 rounded-full object-cover"
-                        />
-                      )}
-                      <div>
+                      <div className="flex-shrink-0">
+                        {leader.photo ? (
+                          <img 
+                            src={leader.photo} 
+                            alt={leader.name}
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-2xl font-bold">{leader.name[0]}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-grow">
                         <h3 className="font-semibold">{leader.name}</h3>
                         <p className="text-sm text-muted-foreground">{leader.role}</p>
-                        <p className="text-sm text-muted-foreground">{leader.ward || leader.constituency || leader.county}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {leader.ward || leader.constituency || leader.county}
+                        </p>
+                        {leader.party && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Party: {leader.party}
+                          </p>
+                        )}
                       </div>
                     </div>
+                    {(leader.email || leader.phone) && (
+                      <div className="mt-4 pt-4 border-t text-sm space-y-1">
+                        {leader.email && (
+                          <p className="text-muted-foreground">
+                            📧 {leader.email}
+                          </p>
+                        )}
+                        {leader.phone && (
+                          <p className="text-muted-foreground">
+                            📱 {leader.phone}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
