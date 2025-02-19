@@ -4,13 +4,10 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "tsx server/index.ts",
+    "dev": "vite",
     "build": "vite build",
-    "start": "NODE_ENV=production node dist/index.js",
-    "check": "tsc",
-    "db:push": "drizzle-kit push",
     "preview": "vite preview",
-    "netlify:build": "npm run build"
+    "start": "node dist/server/index.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

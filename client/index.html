@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Community Engagement Platform</title>
+    <title>Civic Connect</title>
     <meta name="description" content="A platform for citizen-leader interactions and community participation in Kenya" />
     <meta name="theme-color" content="#1f2937" />
 
@@ -24,27 +24,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      window.ENV = {
-        VITE_SUPABASE_URL: "%VITE_SUPABASE_URL%",
-        VITE_SUPABASE_ANON_KEY: "%VITE_SUPABASE_ANON_KEY%"
-      };
-    </script>
     <script type="module" src="/src/main.tsx"></script>
-
-    <!-- Service Worker Registration -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(registration => {
-              console.log('ServiceWorker registration successful');
-            })
-            .catch(err => {
-              console.log('ServiceWorker registration failed: ', err);
-            });
-        });
-      }
-    </script>
   </body>
 </html>

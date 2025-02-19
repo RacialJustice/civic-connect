@@ -30,46 +30,50 @@ import DocumentsPage from './pages/documents';
 import LocalUpdatesPage from './pages/local-updates';
 import ReportsPage from './pages/reports';
 import ProjectsPage from './pages/projects';
+import { Suspense } from 'react';
+import { Loader } from '@/components/ui/loader';
 
 function Router() {
   return (
     <ErrorBoundary>
       <Layout>
-        <Switch>
-          <Route path="/auth"><AuthPage /></Route>
-          <Route path="/"><ProtectedRoute component={HomePage} /></Route>
-          <Route path="/leaders"><ProtectedRoute component={LeadersPage} /></Route>
-          <Route path="/profile"><ProfilePage /></Route>
-          <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
-          <Route path="/forums"><ForumsPage /></Route>
-          <Route path="/forums/:id">
-            {(params) => <ForumPage forumId={params.id} />}
-          </Route>
-          <Route path="/events/create"><CreateEventPage /></Route>
-          <Route path="/events/:id">
-            {(params) => <EventPage eventId={params.id} />}
-          </Route>
-          <Route path="/events"><EventsPage /></Route>
-          <Route path="/notifications">
-            <ProtectedRoute component={NotificationsPage} />
-          </Route>
-          <Route path="/documents">
-            <ProtectedRoute component={DocumentsPage} />
-          </Route>
-          <Route path="/calendar">
-            <ProtectedRoute component={CalendarPage} />
-          </Route>
-          <Route path="/reports">
-            <ProtectedRoute component={ReportsPage} />
-          </Route>
-          <Route path="/local-updates">
-            <ProtectedRoute component={LocalUpdatesPage} />
-          </Route>
-          <Route path="/projects">
-            <ProtectedRoute component={ProjectsPage} />
-          </Route>
-          <Route><NotFound /></Route>
-        </Switch>
+        <Suspense fallback={<Loader />}>
+          <Switch>
+            <Route path="/auth"><AuthPage /></Route>
+            <Route path="/"><ProtectedRoute component={HomePage} /></Route>
+            <Route path="/leaders"><ProtectedRoute component={LeadersPage} /></Route>
+            <Route path="/profile"><ProfilePage /></Route>
+            <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
+            <Route path="/forums"><ForumsPage /></Route>
+            <Route path="/forums/:id">
+              {(params) => <ForumPage forumId={params.id} />}
+            </Route>
+            <Route path="/events/create"><CreateEventPage /></Route>
+            <Route path="/events/:id">
+              {(params) => <EventPage eventId={params.id} />}
+            </Route>
+            <Route path="/events"><EventsPage /></Route>
+            <Route path="/notifications">
+              <ProtectedRoute component={NotificationsPage} />
+            </Route>
+            <Route path="/documents">
+              <ProtectedRoute component={DocumentsPage} />
+            </Route>
+            <Route path="/calendar">
+              <ProtectedRoute component={CalendarPage} />
+            </Route>
+            <Route path="/reports">
+              <ProtectedRoute component={ReportsPage} />
+            </Route>
+            <Route path="/local-updates">
+              <ProtectedRoute component={LocalUpdatesPage} />
+            </Route>
+            <Route path="/projects">
+              <ProtectedRoute component={ProjectsPage} />
+            </Route>
+            <Route><NotFound /></Route>
+          </Switch>
+        </Suspense>
       </Layout>
     </ErrorBoundary>
   );
