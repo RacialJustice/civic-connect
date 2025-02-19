@@ -1,4 +1,5 @@
 import { Header } from "./header";
+import { Footer } from "./footer";
 import { PWAPrompt } from "@/components/ui/pwa-prompt";
 
 type LayoutProps = {
@@ -7,9 +8,12 @@ type LayoutProps = {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Header />
-      {children}
+      <main className="flex-1">
+        {children}
+      </main>
+      <Footer />
       <PWAPrompt />
     </div>
   );

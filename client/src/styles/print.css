@@ -1,0 +1,51 @@
+@media print {
+  /* Hide non-essential elements */
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Show print-specific elements */
+  .print\\:block {
+    display: block !important;
+  }
+
+  /* Ensure text is black for better printing */
+  * {
+    color: black !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Adjust layout for printing */
+  .container {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Force background colors and borders to show */
+  .bg-destructive {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure page breaks don't occur inside cards */
+  .card {
+    break-inside: avoid;
+  }
+
+  /* Add page numbers */
+  @page {
+    margin: 2cm;
+  }
+
+  body::after {
+    content: counter(page);
+    counter-increment: page;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    font-size: 12px;
+  }
+}

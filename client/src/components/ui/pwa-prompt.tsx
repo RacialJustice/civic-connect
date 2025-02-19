@@ -3,34 +3,51 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 
+const PROMPT_STORAGE_KEY = 'pwa-prompt-last-shown';
+const PROMPT_DECLINED_KEY = 'pwa-prompt-declined';
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
 export function PWAPrompt() {
   const [isOpen, setIsOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
+    // Check if PWA is already installed
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+    if (isInstalled) {
+      return;
+    }
+
+    // Check if user has declined the prompt
+    const hasDeclined = localStorage.getItem(PROMPT_DECLINED_KEY) === 'true';
+    if (hasDeclined) {
+      return;
+    }
+
+    // Check when prompt was last shown
+    const lastShown = localStorage.getItem(PROMPT_STORAGE_KEY);
+    if (lastShown) {
+      const timeSinceLastPrompt = Date.now() - parseInt(lastShown);
+      if (timeSinceLastPrompt < ONE_WEEK_MS) {
+        return;
+      }
+    }
+
     const handler = (e: Event) => {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
-      // Force the prompt to be visible for testing
       setIsOpen(true);
-      console.log('beforeinstallprompt event fired');
+      localStorage.setItem(PROMPT_STORAGE_KEY, Date.now().toString());
     };
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Check if the app is already installed
-    window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
-      console.log('Display mode changed:', e.matches ? 'standalone' : 'browser');
+    // Monitor installation status
+    window.addEventListener('appinstalled', () => {
+      setIsOpen(false);
+      setDeferredPrompt(null);
+      console.log('PWA installed successfully');
     });
-
-    // Log service worker registration status
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then(registration => {
-        console.log('Service Worker registration status:', registration ? 'registered' : 'not registered');
-      });
-    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
@@ -39,48 +56,88 @@ export function PWAPrompt() {
 
   const handleInstall = async () => {
     if (!deferredPrompt) {
-      console.log('No deferred prompt available');
+      console.log('No installation prompt available');
       return;
     }
 
-    // Show the install prompt
-    deferredPrompt.prompt();
+    try {
+      // Show the install prompt
+      deferredPrompt.prompt();
+      
+      // Wait for the user's choice
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to install prompt: ${outcome}`);
+      
+      if (outcome === 'accepted') {
+        console.log('PWA installation accepted');
+      } else {
+        console.log('PWA installation declined');
+      }
+    } catch (error) {
+      console.error('Error during PWA installation:', error);
+    } finally {
+      // Clear the saved prompt
+      setDeferredPrompt(null);
+      setIsOpen(false);
+    }
+  };
 
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to install prompt: ${outcome}`);
-
-    // Clear the saved prompt regardless of outcome
-    setDeferredPrompt(null);
+  const handleDecline = () => {
+    localStorage.setItem(PROMPT_DECLINED_KEY, 'true');
     setIsOpen(false);
   };
 
-  // Force show the prompt for testing
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!window.matchMedia('(display-mode: standalone)').matches) {
-        setIsOpen(true);
-        console.log('Showing PWA prompt after timeout');
-      }
-    }, 3000);
+  const handleDefer = () => {
+    // Just close the prompt, it will show again after a week
+    setIsOpen(false);
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
+  if (!deferredPrompt) {
+    return null;
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent side="bottom" className="h-[200px]">
+      <SheetContent side="bottom" className="h-auto max-w-none sm:max-w-xl sm:mx-auto">
         <SheetHeader>
-          <SheetTitle>Add to Home Screen</SheetTitle>
+          <SheetTitle className="text-xl">Install CivicConnect</SheetTitle>
         </SheetHeader>
-        <div className="flex flex-col gap-4 mt-4">
-          <p>Add our app to your home screen for quick and easy access!</p>
-          <div className="flex justify-end gap-4">
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Maybe Later
+        <div className="mt-4 space-y-4">
+          <div className="space-y-2">
+            <p className="text-base">
+              Install CivicConnect for a better experience:
+            </p>
+            <ul className="ml-6 space-y-1 text-sm text-muted-foreground list-disc">
+              <li>Quick access from your home screen</li>
+              <li>Faster loading times</li>
+              <li>Works offline</li>
+              <li>Real-time notifications</li>
+            </ul>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-6">
+            <Button 
+              onClick={handleInstall}
+              className="flex-1"
+              size="lg"
+            >
+              Install Now
             </Button>
-            <Button onClick={handleInstall}>
-              Install
+            <Button 
+              variant="outline" 
+              onClick={handleDefer}
+              className="flex-1"
+              size="lg"
+            >
+              Remind Me Later
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={handleDecline}
+              className="flex-1"
+              size="lg"
+            >
+              Don't Show Again
             </Button>
           </div>
         </div>

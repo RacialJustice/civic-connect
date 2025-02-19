@@ -10,9 +10,8 @@ export default function HomePage() {
   
   return (
     <div>
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-8 md:grid-cols-[300px,1fr]">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-[300px,1fr]">
           {!user?.constituency && (
             <div className="space-y-6">
               <Card>
@@ -26,10 +25,9 @@ export default function HomePage() {
             </div>
           )}
 
-          <div className={user?.constituency ? "" : "md:col-start-2"}>
-            {/* Updates Section */}
+          <div className={user?.constituency ? "" : "lg:col-start-2"}>
             <section>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-6">
                 <Bell className="h-5 w-5 text-primary" />
                 <h1 className="text-2xl font-bold">Latest Updates</h1>
               </div>

@@ -30,6 +30,8 @@ import DocumentsPage from './pages/documents';
 import LocalUpdatesPage from './pages/local-updates';
 import ReportsPage from './pages/reports';
 import ProjectsPage from './pages/projects';
+import EmergencyContactsPage from './pages/emergency-contacts';
+import EmergencyAlertPage from './pages/emergency-alert';
 import { Suspense } from 'react';
 import { Loader } from '@/components/ui/loader';
 
@@ -71,6 +73,12 @@ function Router() {
             <Route path="/projects">
               <ProtectedRoute component={ProjectsPage} />
             </Route>
+            <Route path="/emergency-contacts">
+              <ProtectedRoute component={EmergencyContactsPage} />
+            </Route>
+            <Route path="/emergency-alert">
+              <ProtectedRoute component={EmergencyAlertPage} />
+            </Route>
             <Route><NotFound /></Route>
           </Switch>
         </Suspense>
@@ -81,20 +89,22 @@ function Router() {
 
 function App() {
   return (
-    <I18nextProvider i18n={i18n}>
-      <ThemeProvider defaultTheme="system" storageKey="kenya-civic-theme">
-        <QueryClientProvider client={queryClient}>
-          <SessionContextProvider supabaseClient={supabase}>
-            <AuthProvider>
-              <ChatProvider>
-                <Router />
-                <Toaster />
-              </ChatProvider>
-            </AuthProvider>
-          </SessionContextProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </I18nextProvider>
+    <ErrorBoundary>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider defaultTheme="system" storageKey="kenya-civic-theme">
+          <QueryClientProvider client={queryClient}>
+            <SessionContextProvider supabaseClient={supabase}>
+              <AuthProvider>
+                <ChatProvider>
+                  <Router />
+                  <Toaster />
+                </ChatProvider>
+              </AuthProvider>
+            </SessionContextProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </I18nextProvider>
+    </ErrorBoundary>
   );
 }
 

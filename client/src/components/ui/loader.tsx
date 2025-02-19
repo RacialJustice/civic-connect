@@ -15,7 +15,7 @@ export function Loader({ className, size = 'md', ...props }: LoaderProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-center p-4",
+        "flex items-center justify-center min-h-[200px]",
         className
       )}
       {...props}

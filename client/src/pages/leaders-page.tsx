@@ -20,7 +20,7 @@ export default function LeadersPage() {
 
   if (!user?.constituency) {
     return (
-      <div className="container py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
         <Card>
           <CardContent className="py-8 text-center">
             Please set your constituency in your profile to see your local leaders.
@@ -32,7 +32,7 @@ export default function LeadersPage() {
 
   if (isLoading) {
     return (
-      <div className="container flex justify-center items-center py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 flex justify-center items-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -54,7 +54,7 @@ export default function LeadersPage() {
   );
 
   return (
-    <div className="container py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Your Leaders</h1>
         <p className="mt-2 text-lg text-muted-foreground">
@@ -62,11 +62,11 @@ export default function LeadersPage() {
         </p>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-10">
         {levels.map(level => (
           <section key={level}>
-            <h2 className="text-2xl font-semibold mb-4 capitalize">{level} Level Representatives</h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <h2 className="text-2xl font-semibold mb-6 capitalize">{level} Level Representatives</h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {groupedLeaders[level].map((leader) => (
                 <Card key={leader.id} className="overflow-hidden">
                   <CardHeader className="p-0">
@@ -85,16 +85,16 @@ export default function LeadersPage() {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-16 text-center">
-                    <h3 className="text-xl font-semibold">{leader.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{leader.role}</p>
+                  <CardContent className="pt-16 px-6">
+                    <h3 className="text-xl font-semibold text-center">{leader.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1 text-center">{leader.role}</p>
 
-                    <div className="flex justify-center gap-2 mt-2">
+                    <div className="flex flex-wrap justify-center gap-2 mt-4">
                       <Badge variant="secondary">{leader.level}</Badge>
                       {leader.party && <Badge>{leader.party}</Badge>}
                     </div>
 
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-6 space-y-3">
                       {leader.email && (
                         <Button variant="outline" className="w-full" asChild>
                           <a href={`mailto:${leader.email}`}>
@@ -112,42 +112,12 @@ export default function LeadersPage() {
                         </Button>
                       )}
                     </div>
-
-                    <div className="mt-4 text-sm">
-                      <p className="font-medium">Term</p>
-                      <p className="text-muted-foreground">
-                        {leader.termStart && leader.termEnd ? (
-                          <>
-                            {new Date(leader.termStart).getFullYear()} - {new Date(leader.termEnd).getFullYear()}
-                          </>
-                        ) : (
-                          "Term information not available"
-                        )}
-                      </p>
-                    </div>
-
-                    {leader.responsibilities && (
-                      <div className="mt-4 text-sm">
-                        <p className="font-medium">Responsibilities</p>
-                        <p className="text-muted-foreground">{leader.responsibilities}</p>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               ))}
             </div>
           </section>
         ))}
-
-        {leaders.length === 0 && (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">
-                No leaders found for your location. Please ensure your location information is correct in your profile.
-              </p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
