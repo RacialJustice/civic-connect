@@ -110,17 +110,6 @@ export function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <button
-            onClick={toggleTheme}
-            className="rounded-full p-2 hover:bg-[hsl(var(--header-fg)/0.1)]"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? (
-              <SunIcon className="h-5 w-5" />
-            ) : (
-              <MoonIcon className="h-5 w-5" />
-            )}
-          </button>
           {isMobile ? (
             <div className="flex items-center gap-2">
               <Sheet>
@@ -170,7 +159,18 @@ export function Header() {
           ) : (
             <div className="flex items-center gap-4">
               <NavContent />
-              <div className="flex items-center gap-2 ml-4">
+              <button
+                onClick={toggleTheme}
+                className="rounded-full p-2 hover:bg-[hsl(var(--header-fg)/0.1)]"
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? (
+                  <SunIcon className="h-5 w-5" />
+                ) : (
+                  <MoonIcon className="h-5 w-5" />
+                )}
+              </button>
+              <div className="flex items-center">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="border-primary-foreground/20">
