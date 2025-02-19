@@ -3,11 +3,31 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --header-bg: 0 0% 98%;
+    --header-fg: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --header-bg: 222.2 47.4% 11.2%;
+    --header-fg: 210 40% 98%;
+  }
+
   * {
-    @apply border-border;
+    @apply border-border transition-colors duration-200;
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  header {
+    @apply bg-[hsl(var(--header-bg))] text-[hsl(var(--header-fg))] 
+           border-b border-[hsl(var(--header-fg)/0.1)]
+           shadow-sm shadow-[hsl(var(--header-fg)/0.1)];
   }
 }

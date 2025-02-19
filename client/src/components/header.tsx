@@ -13,10 +13,41 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useTheme } from '../hooks/useTheme';
+
+function SunIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  );
+}
+
+function MoonIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      {...props}
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
 
 export function Header() {
   const auth = useAuth();
   const isMobile = useIsMobile();
+  const { theme, toggleTheme } = useTheme();
 
   if (!auth || (!auth.user && auth.logoutMutation.isPending)) {
     return null;
@@ -65,16 +96,33 @@ export function Header() {
   );
 
   return (
-    <header className="bg-primary text-primary-foreground py-4">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
-          <Link href="/">
-            <h1 className="text-2xl font-bold cursor-pointer">Civic Connect</h1>
-          </Link>
+    <header className="sticky top-0 z-50 w-full">
+      <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex items-center space-x-4">
+          <img 
+            src="/logo.svg" 
+            alt="Civic Connect"
+            className="h-8 w-8 dark:invert" 
+          />
+          <h1 className="text-xl font-bold">
+            Civic Connect
+          </h1>
+        </div>
 
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={toggleTheme}
+            className="rounded-full p-2 hover:bg-[hsl(var(--header-fg)/0.1)]"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? (
+              <SunIcon className="h-5 w-5" />
+            ) : (
+              <MoonIcon className="h-5 w-5" />
+            )}
+          </button>
           {isMobile ? (
             <div className="flex items-center gap-2">
-              <ThemeSwitcher />
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="icon" className="border-primary-foreground/20">
@@ -123,7 +171,6 @@ export function Header() {
             <div className="flex items-center gap-4">
               <NavContent />
               <div className="flex items-center gap-2 ml-4">
-                <ThemeSwitcher />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="border-primary-foreground/20">

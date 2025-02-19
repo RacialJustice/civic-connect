@@ -29,21 +29,36 @@ export async function setupVite(app: Express, server: Server) {
     allowedHosts: true,
   };
 
-  const vite = await createViteServer({
-    ...viteConfig,
-    configFile: false,
-    customLogger: {
-      ...viteLogger,
-      error: (msg, options) => {
-        viteLogger.error(msg, options);
-        process.exit(1);
-      },
-    },
-    server: serverOptions,
-    appType: "custom",
-  });
+  let vite;
+  try {
+    vite = await createViteServer({
+      ...viteConfig,
+      configFile: false,
+      customLogger: viteLogger,
+      server: serverOptions,
+      appType: "custom",
+      define: {
+        'window.ENV': JSON.stringify({
+          VITE_SUPABASE_URL: process.env.SUPABASE_URL,
+          VITE_SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+        })
+      }
+    });
 
-  app.use(vite.middlewares);
+    // Cleanup on process exit
+    process.on('SIGINT', async () => {
+      if (vite) {
+        await vite.close();
+      }
+      process.exit();
+    });
+
+    app.use(vite.middlewares);
+  } catch (error: any) {
+    viteLogger.error(`Vite server startup failed: ${error.message}`);
+    throw error;
+  }
+
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
