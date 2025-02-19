@@ -5,6 +5,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  VITE_SUPABASE_URL = "${SUPABASE_URL}"
+  VITE_SUPABASE_ANON_KEY = "${SUPABASE_ANON_KEY}"
 
 [[redirects]]
   from = "/*"
@@ -17,4 +19,4 @@
 
 [dev]
   framework = "vite"
-  targetPort = 5000
+  targetPort = 3000

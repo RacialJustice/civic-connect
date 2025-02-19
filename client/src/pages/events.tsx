@@ -1,19 +1,19 @@
-import { useEffect } from 'react';
 import { useEvents } from '@/hooks/use-events';
+import { Container } from '@/components/ui/container';
 
 export function EventsPage() {
   const { events, isLoading } = useEvents();
 
   return (
-    <div className="container px-6 py-8 md:px-8 lg:px-12">
-      <h1 className="text-3xl font-bold mb-6">Community Events</h1>
+    <Container>
+      <h1 className="text-3xl font-bold mb-8 text-center">Community Events</h1>
       
       {isLoading ? (
-        <div>Loading events...</div>
+        <div className="flex justify-center">Loading events...</div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 place-items-center">
           {events?.map((event) => (
-            <div key={event.id} className="rounded-lg border bg-card p-6">
+            <div key={event.id} className="rounded-lg border bg-card p-6 w-full max-w-md">
               <h2 className="text-xl font-semibold mb-2">{event.title}</h2>
               <p className="text-muted-foreground mb-4">{event.description}</p>
               <div className="text-sm text-muted-foreground">
@@ -24,7 +24,7 @@ export function EventsPage() {
           ))}
         </div>
       )}
-    </div>
+    </Container>
   );
 }
 

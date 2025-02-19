@@ -68,27 +68,31 @@ export function Header() {
     { href: "/calendar", label: "Calendar" },
     { href: "/reports", label: "Reports" },
     { href: "/local-updates", label: "Local Updates" },
-    { href: "/projects", label: "Development Projects" },
+    { href: "/projects", label: "Development Projects" }
   ];
 
   const NavContent = () => (
     <>
       {navLinks.map((link) => (
         <Link key={link.href} href={link.href}>
-          <span className="hover:text-primary-foreground/80 cursor-pointer">
+          <a className="hover:text-primary-foreground/80 cursor-pointer">
             {link.label}
-          </span>
+          </a>
         </Link>
       ))}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <span className="hover:text-primary-foreground/80 cursor-pointer">Resources</span>
+          <button className="hover:text-primary-foreground/80 cursor-pointer">
+            Resources
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {resourceLinks.map((link) => (
-            <Link key={link.href} href={link.href}>
-              <DropdownMenuItem>{link.label}</DropdownMenuItem>
-            </Link>
+            <DropdownMenuItem key={link.href} asChild>
+              <Link href={link.href}>
+                <a className="w-full">{link.label}</a>
+              </Link>
+            </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>

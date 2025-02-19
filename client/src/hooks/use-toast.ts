@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useState } from "react";
 
 import type {
   ToastActionElement,
@@ -168,24 +169,23 @@ function toast({ ...props }: Toast) {
   }
 }
 
-function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
+const useToast = () => {
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
-  React.useEffect(() => {
-    listeners.push(setState)
-    return () => {
-      const index = listeners.indexOf(setState)
-      if (index > -1) {
-        listeners.splice(index, 1)
-      }
-    }
-  }, [state])
+  const addToast = (toast: Omit<Toast, "id">) => {
+    setToasts((current) => [...current, { ...toast, id: crypto.randomUUID() }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((current) => current.filter((toast) => toast.id !== id));
+  };
 
   return {
-    ...state,
-    toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
-  }
-}
+    toasts,
+    addToast,
+    removeToast,
+  };
+};
 
-export { useToast, toast }
+export { useToast, toast };
+export type { Toast };

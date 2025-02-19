@@ -25,6 +25,11 @@ import NotificationsPage from "@/pages/notifications-page";
 import i18n from './lib/i18n';
 import { I18nextProvider } from 'react-i18next';
 import CreateEventPage from "@/pages/create-event";
+import CalendarPage from './pages/calendar';
+import DocumentsPage from './pages/documents';
+import LocalUpdatesPage from './pages/local-updates';
+import ReportsPage from './pages/reports';
+import ProjectsPage from './pages/projects';
 
 function Router() {
   return (
@@ -49,19 +54,19 @@ function Router() {
             <ProtectedRoute component={NotificationsPage} />
           </Route>
           <Route path="/documents">
-            <ProtectedRoute component={() => import("@/pages/resources/documents").then(m => m.default)} />
+            <ProtectedRoute component={DocumentsPage} />
           </Route>
           <Route path="/calendar">
-            <ProtectedRoute component={() => import("@/pages/resources/calendar").then(m => m.default)} />
+            <ProtectedRoute component={CalendarPage} />
           </Route>
           <Route path="/reports">
-            <ProtectedRoute component={() => import("@/pages/resources/reports").then(m => m.default)} />
+            <ProtectedRoute component={ReportsPage} />
           </Route>
           <Route path="/local-updates">
-            <ProtectedRoute component={() => import("@/pages/resources/local-updates").then(m => m.default)} />
+            <ProtectedRoute component={LocalUpdatesPage} />
           </Route>
           <Route path="/projects">
-            <ProtectedRoute component={() => import("@/pages/resources/projects").then(m => m.default)} />
+            <ProtectedRoute component={ProjectsPage} />
           </Route>
           <Route><NotFound /></Route>
         </Switch>
