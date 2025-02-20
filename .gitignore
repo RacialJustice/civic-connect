@@ -49,3 +49,13 @@ coverage
 
 # Cache
 .cache
+
+# Development icons and assets
+client/public/icons/
+/public/icons/icon-*.png
+*.ico
+*.png
+!src/**/*.png
+
+# Allow specific assets
+!client/public/icons/logo.png
