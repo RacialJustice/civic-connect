@@ -1,35 +1,58 @@
-import express from 'express';
-import { createServer } from 'http';
-import { setupWebSocket } from './websocket';
+import 'dotenv/config';
+import express, { Request, Response, NextFunction } from 'express';
+import { createServer } from "http";
 import cors from 'cors';
+import { log } from './utils/logger.js';
 
 const app = express();
-const server = createServer(app);
 
-// Configure CORS
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: 'http://localhost:5173',
   credentials: true
 }));
 
-// Setup WebSocket
-setupWebSocket(server);
-
+// Middleware setup
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// Basic health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+// Mock data
+const leaders = [
+  { id: 1, name: 'John Doe', role: 'County Governor', constituency: 'Kabete' },
+  { id: 2, name: 'Jane Smith', role: 'MP', constituency: 'Kabete' },
+];
+
+const events = [
+  { id: 1, title: 'Town Hall Meeting', date: '2024-02-01', constituency: 'Kabete' },
+  { id: 2, title: 'Community Clean-up', date: '2024-02-15', constituency: 'Kabete' },
+];
+
+// Basic health check route
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'healthy' });
+});
+
+// Routes
+app.get('/api/leaders', (req, res) => {
+  res.json(leaders);
+});
+
+app.get('/api/events', (req, res) => {
+  const { constituency } = req.query;
+  const filteredEvents = constituency 
+    ? events.filter(event => event.constituency === constituency)
+    : events;
+  res.json(filteredEvents);
 });
 
 // Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal Server Error' });
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Error:', err);
+  res.status(500).json({ message: 'Internal Server Error' });
 });
 
 const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  log.info(`Server running on port ${PORT}`);
 });
+
+export { app };
