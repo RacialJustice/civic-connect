@@ -1,3 +1,4 @@
+-- Basic table setup without transaction commands
 CREATE TABLE IF NOT EXISTS mps (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,

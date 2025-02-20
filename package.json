@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node dist/server/index.js",
-    "db:migrate": "tsx supabase/migrate.ts"
+    "db:migrate": "node supabase/migrate.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -69,6 +69,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pdf-lib": "^1.17.1",
+    "pg": "^8.13.3",
     "postgres": "^3.4.5",
     "qrcode": "^1.5.4",
     "react": "^18.2.0",
@@ -103,6 +104,7 @@
     "@types/nodemailer": "^6.4.17",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
+    "@types/pg": "^8.11.11",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
