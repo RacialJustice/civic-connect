@@ -2,160 +2,149 @@ import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, LogOut, UserCircle } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
-import { ThemeSwitcher } from "./theme-switcher";
+import { Menu, LogOut, UserCircle, Home, User, Settings } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "./ui/sheet";
+import { ThemeSwitcher } from "./theme-switcher";
 import { useState } from "react";
 
 export function Header() {
   const auth = useAuth();
   const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
 
-  if (!auth || (!auth.user && auth.logoutMutation.isPending)) {
-    return null;
-  }
+  if (!auth?.user) return null;
 
-  const { user, logoutMutation } = auth;
-
-  const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/leaders", label: "Leaders" },
-    { to: "/forums", label: "Forums" },
-    { to: "/polls", label: "Polls" },
-    { to: "/events", label: "Events" },
-    { to: "/emergency-contacts", label: "Emergency" },
+  const navigationLinks = [
+    { to: "/", label: "Home", icon: Home },
+    { to: "/profile", label: "Profile", icon: User },
+    { to: "/settings", label: "Settings", icon: Settings },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
-  const NavLink = ({ to, label }: { to: string; label: string }) => (
-    <Link to={to}>
-      <Button 
-        variant={isActive(to) ? "secondary" : "ghost"}
-        className={`px-4 ${isActive(to) ? "bg-accent" : ""}`}
-      >
-        {label}
-      </Button>
+  const handleLogout = () => {
+    setIsOpen(false);
+    auth.logoutMutation.mutate();
+  };
+
+  const NavLink = ({ to, label, className = "" }) => (
+    <Link
+      to={to}
+      className={`text-sm font-medium transition-colors hover:text-primary
+        ${isActive(to) ? 'text-primary' : 'text-muted-foreground'}
+        ${className}`}
+    >
+      {label}
     </Link>
   );
 
-  const handleNavigation = () => {
-    setIsOpen(false);
-  };
-
-  const handleLogout = () => {
-    setIsOpen(false);
-    logoutMutation.mutate();
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2 md:gap-4">
-          <Link to="/" className="flex items-center">
-            <span className="text-xl font-bold px-2 py-1.5 rounded-md hover:bg-accent">
+      <div className="container mx-auto">
+        <div className="flex h-14 md:h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+          {/* Logo */}
+          <div className="flex shrink-0 items-center gap-x-2">
+            <Link 
+              to="/" 
+              className="flex items-center text-lg font-semibold sm:text-xl md:text-2xl transition-colors hover:text-primary"
+            >
               CivicConnect
-            </span>
-          </Link>
-        </div>
+            </Link>
+          </div>
 
-        {isMobile ? (
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
+          {isMobile ? (
+            <div className="flex items-center gap-2">
+              {/* Profile Quick Access */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                asChild
+                className="relative"
+              >
+                <Link to="/profile">
+                  <UserCircle className="h-5 w-5" />
+                  <span className="sr-only">Profile</span>
+                </Link>
               </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[80vw] sm:w-[350px] px-6">
-              <SheetHeader className="pb-4">
-                <SheetTitle>Menu</SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col gap-4">
-                {navLinks.map((link) => (
-                  <Link 
-                    key={link.to} 
-                    to={link.to}
-                    onClick={() => {
-                      handleNavigation();
-                      setIsOpen(false);
-                    }}
-                  >
-                    <Button 
-                      variant={isActive(link.to) ? "secondary" : "ghost"}
-                      className="w-full justify-start"
-                    >
-                      {link.label}
-                    </Button>
-                  </Link>
+
+              {/* Mobile Menu */}
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full max-w-[350px] p-0">
+                  <SheetHeader className="p-6 pb-2">
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col">
+                    {navigationLinks.map((link) => (
+                      <SheetClose asChild key={link.to}>
+                        <Link
+                          to={link.to}
+                          className={`flex items-center gap-3 px-6 py-4 text-sm transition-colors
+                            ${isActive(link.to) 
+                              ? 'bg-accent text-accent-foreground' 
+                              : 'hover:bg-accent/50'
+                            }`}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <link.icon className="h-4 w-4" />
+                          {link.label}
+                        </Link>
+                      </SheetClose>
+                    ))}
+                    <div className="px-6 py-4 space-y-4">
+                      <ThemeSwitcher mobile className="w-full" />
+                      <hr className="border-t border-border" />
+                      <Button
+                        variant="destructive"
+                        onClick={handleLogout}
+                        disabled={auth.logoutMutation.isPending}
+                        className="w-full"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                      </Button>
+                    </div>
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </div>
+          ) : (
+            /* Desktop Navigation */
+            <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+              <nav className="flex items-center gap-6 lg:gap-8">
+                {navigationLinks.map((link) => (
+                  <NavLink key={link.to} {...link} />
                 ))}
-                <hr className="my-2" />
-                <ThemeSwitcher 
-                  variant="ghost" 
-                  className="w-full justify-start" 
-                  mobile={true}
-                />
+              </nav>
+              <div className="flex items-center gap-3 border-l pl-6">
+                <ThemeSwitcher />
                 <Button
                   variant="destructive"
-                  onClick={handleLogout}
-                  disabled={logoutMutation.isPending}
-                  className="mt-2"
+                  size="sm"
+                  onClick={() => auth.logoutMutation.mutate()}
+                  disabled={auth.logoutMutation.isPending}
+                  className="whitespace-nowrap"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
               </div>
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <>
-            <nav className="flex-1 ml-8">
-              <ul className="flex items-center gap-6">
-                {navLinks.map((link) => (
-                  <li key={link.to}>
-                    <NavLink {...link} />
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            <div className="flex items-center gap-4 ml-4">
-              <ThemeSwitcher />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="ml-2">
-                    <UserCircle className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-3 py-2 text-sm font-medium">
-                    {user?.name || user?.email}
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="w-full">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => logoutMutation.mutate()}
-                    disabled={logoutMutation.isPending}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );

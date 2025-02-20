@@ -1,6 +1,6 @@
 import { Container } from "./container";
 import { Skeleton } from "./skeleton";
-import { CalendarDays, FileText, Book, ChartBar, Building2 } from "lucide-react";
+import { CalendarDays, FileText, Book, BarChart, Building2 } from "lucide-react";
 
 interface PlaceholderContentProps {
   title: string;
@@ -11,7 +11,7 @@ interface PlaceholderContentProps {
 const icons = {
   calendar: CalendarDays,
   document: FileText,
-  report: ChartBar,
+  report: BarChart,
   updates: Book,
   projects: Building2
 };

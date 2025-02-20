@@ -1,101 +1,122 @@
-import { Container } from './ui/container'
-import { Link } from 'react-router-dom'
-import { Button } from './ui/button'
-import { 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Mail,
-  MapPin,
-  Phone 
-} from 'lucide-react'
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Phone, AlertTriangle, Heart, HelpCircle } from "lucide-react";
 
 export function Footer() {
+  const emergencyNumbers = [
+    { id: 1, name: "Police", number: "999" },
+    { id: 2, name: "Ambulance", number: "112" },
+    { id: 3, name: "Fire", number: "999" },
+    { id: 4, name: "Child Helpline", number: "116" },
+    { id: 5, name: "Gender Violence", number: "1195" }
+  ];
+
+  const paymentMethods = [
+    "M-Pesa",
+    "Airtel Money",
+    "Credit/Debit Cards",
+    "Bank Transfer"
+  ];
+
   return (
     <footer className="border-t bg-card text-card-foreground">
-      <Container>
-        <div className="grid grid-cols-1 gap-8 py-12 md:grid-cols-4">
-          <div>
-            <h3 className="text-lg font-semibold">CivicConnect</h3>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Empowering communities through digital civic engagement.
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          {/* Emergency Contacts Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Emergency Contacts
+            </h3>
+            <div className="space-y-3">
+              {emergencyNumbers.map((contact) => (
+                <div key={contact.id} className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <a href={`tel:${contact.number}`} className="text-sm hover:underline">
+                    <span className="font-medium">{contact.number}</span>
+                    <span className="text-muted-foreground ml-2">({contact.name})</span>
+                  </a>
+                </div>
+              ))}
+            </div>
+            <Button variant="link" asChild className="px-0">
+              <Link href="/emergency-contacts">View all emergency services</Link>
+            </Button>
+          </div>
+
+          {/* Donations Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Heart className="h-5 w-5 text-destructive" />
+              Support Our Community
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Your donations help fund the development of this initiative.
             </p>
-          </div>
-
-          <div>
-            <h4 className="font-medium">Quick Links</h4>
-            <ul className="mt-4 space-y-2 text-sm">
-              <li>
-                <Link to="/about" className="text-muted-foreground hover:text-primary">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-muted-foreground hover:text-primary">
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link to="/emergency-alert" className="text-muted-foreground hover:text-primary">
-                  SOS
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-muted-foreground hover:text-primary">
-                  FAQ
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-medium">Contact Info</h4>
-            <ul className="mt-4 space-y-2 text-sm">
-              <li className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                Nairobi, City
-              </li>
-              <li className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                (254) 720-123-456
-              </li>
-              <li className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                info@civicconnect.com
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-medium">Follow Us</h4>
-            <div className="mt-4 flex space-x-2">
-              <Button variant="outline" size="icon">
-                <Facebook className="h-4 w-4" />
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Accepted Payment Methods:</p>
+              <div className="flex flex-wrap gap-2">
+                {paymentMethods.map((method) => (
+                  <span
+                    key={method}
+                    className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+                  >
+                    {method}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Button className="w-full">
+                <Heart className="mr-2 h-4 w-4" />
+                Donate Now
               </Button>
-              <Button variant="outline" size="icon">
-                <Twitter className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <Instagram className="h-4 w-4" />
+              <div className="flex gap-2 text-xs text-muted-foreground">
+                <Button variant="link" size="sm" className="h-auto p-0">
+                  Tax Information
+                </Button>
+                <span>•</span>
+                <Button variant="link" size="sm" className="h-auto p-0">
+                  Transparency Report
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Quick Links</h3>
+            <nav className="flex flex-col space-y-2">
+              <Link href="/about" className="text-sm hover:underline">About Us</Link>
+              <Link href="/contact" className="text-sm hover:underline">Contact</Link>
+              <Link href="/privacy" className="text-sm hover:underline">Privacy Policy</Link>
+              <Link href="/terms" className="text-sm hover:underline">Terms of Service</Link>
+            </nav>
+          </div>
+
+          {/* Help & Support */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <HelpCircle className="h-5 w-5" />
+              Help & Support
+            </h3>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Need assistance? Our support team is here to help.
+              </p>
+              <Button variant="outline" asChild className="w-full">
+                <a href="mailto:support@civicconnect.co.ke">
+                  Contact Support
+                </a>
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center border-t py-6 md:flex-row md:justify-between">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} CivicConnect. All rights reserved. Made possible through the generous support of The Racial Justice Network.
-          </p>
-          <div className="mt-4 flex space-x-4 text-sm text-muted-foreground md:mt-0">
-            <Link to="/privacy" className="hover:text-primary">
-              Privacy Policy
-            </Link>
-            <Link to="/terms" className="hover:text-primary">
-              Terms of Service
-            </Link>
-          </div>
+        <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
+          <p>© {new Date().getFullYear()} CivicConnect. All rights reserved.</p>
         </div>
-      </Container>
+      </div>
     </footer>
-  )
+  );
 }

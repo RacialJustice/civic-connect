@@ -1,40 +1,75 @@
-import { testConnection, supabase } from './db';
-import fs from 'fs/promises';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { fileURLToPath } from 'url';
+import * as dotenv from 'dotenv';
+import fetch from 'node-fetch';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MIGRATIONS_DIR = path.join(__dirname, '../server/db/migrations');
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
-async function runMigrations() {
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const serviceRoleKey = process.env.SUPERBASE_SERVICE_ROLE;
+const accessToken = process.env.SUPABASE_ACCESS_TOKEN;
+const projectId = process.env.SUPABASE_PROJECT_ID;
+
+if (!supabaseUrl || !serviceRoleKey || !projectId || !accessToken) {
+  console.error('Missing required environment variables');
+  process.exit(1);
+}
+
+const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
+
+async function executeSql(sql: string) {
+  const response = await fetch(`https://api.supabase.com/v1/projects/${projectId}/sql`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: sql,
+      production: true // Set to true to run on production database
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`SQL execution failed: ${JSON.stringify(error)}`);
+  }
+
+  return response;
+}
+
+async function migrate() {
   console.log('Testing connection...');
-  await testConnection();
+  
+  try {
+    const migrationFiles = fs.readdirSync(MIGRATIONS_DIR)
+      .sort()
+      .filter(f => f.endsWith('.sql'));
 
-  console.log('Reading migrations...');
-  const files = await fs.readdir(MIGRATIONS_DIR);
-  const sqlFiles = files
-    .filter(f => f.endsWith('.sql'))
-    .sort(); // Ensure order
-
-  for (const file of sqlFiles) {
-    console.log(`Running migration: ${file}`);
-    const sql = await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8');
+    console.log('Running migrations...');
     
-    try {
-      // Ensure the execute_sql function is created first
-      if (file === '0000_create_execute_sql_function.sql') {
-        const { error } = await supabase.rpc('execute_sql', { _sql: sql });
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase.rpc('execute_sql', { _sql: sql });
-        if (error) throw error;
+    for (const file of migrationFiles) {
+      console.log(`Running migration: ${file}`);
+      const sql = fs.readFileSync(
+        path.join(MIGRATIONS_DIR, file),
+        'utf8'
+      );
+      
+      try {
+        await executeSql(sql);
+        console.log(`✓ Completed migration: ${file}`);
+      } catch (error) {
+        console.error(`Failed migration ${file}:`, error);
+        return;
       }
-      console.log(`Completed migration: ${file}`);
-    } catch (error) {
-      console.error(`Failed migration ${file}:`, error);
-      throw error;
     }
+    
+    console.log('All migrations completed successfully');
+  } catch (err) {
+    console.error('Migration failed:', err);
   }
 }
 
-runMigrations().catch(console.error);
+migrate();
