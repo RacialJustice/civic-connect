@@ -26,6 +26,34 @@ const events = [
   { id: 2, title: 'Community Clean-up', date: '2024-02-15', constituency: 'Kabete' },
 ];
 
+// Add emergency services mock data
+const emergencyServices = [
+  {
+    id: 1,
+    name: "Emergency Police Hotline",
+    phone: "999",
+    type: "police",
+    available24h: true,
+    location: "Nationwide"
+  },
+  {
+    id: 2,
+    name: "Fire and Rescue Services",
+    phone: "020-2344599",
+    type: "fire",
+    available24h: true,
+    location: "Nairobi"
+  },
+  {
+    id: 3,
+    name: "Medical Emergency Response",
+    phone: "0800-723355",
+    type: "medical",
+    available24h: true,
+    location: "Nationwide"
+  }
+];
+
 // Basic health check route
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'healthy' });
@@ -42,6 +70,11 @@ app.get('/api/events', (req, res) => {
     ? events.filter(event => event.constituency === constituency)
     : events;
   res.json(filteredEvents);
+});
+
+// Add new endpoint
+app.get('/api/emergency-services', (_req, res) => {
+  res.json(emergencyServices);
 });
 
 // Error handling middleware

@@ -37,6 +37,7 @@ import { Loader } from '@/components/ui/loader';
 import ProfileOverview from "@/pages/profile/overview";
 import SettingsPage from "@/pages/profile/settings";
 import SecurityPage from "@/pages/profile/security";
+import EmergencyServicesPage from "@/pages/emergency-services";
 
 function App() {
   return (
@@ -176,6 +177,13 @@ function App() {
                         <ProtectedRoute>
                           <Suspense fallback={<Loader />}>
                             <Polls />
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/emergency-services" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<Loader />}>
+                            <EmergencyServicesPage />
                           </Suspense>
                         </ProtectedRoute>
                       } />

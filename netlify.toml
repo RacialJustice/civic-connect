@@ -1,22 +1,8 @@
-[build]
-  base = "/"
-  command = "npm run build"
-  publish = "dist"
-
-[build.environment]
-  NODE_VERSION = "20"
-  VITE_SUPABASE_URL = "${SUPABASE_URL}"
-  VITE_SUPABASE_ANON_KEY = "${SUPABASE_ANON_KEY}"
-
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-[functions]
-  directory = "server/functions"
-  node_bundler = "esbuild"
-
-[dev]
-  framework = "vite"
-  targetPort = 3000
+[build]
+  command = "npm run build"
+  publish = "dist"
