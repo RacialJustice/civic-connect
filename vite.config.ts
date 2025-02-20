@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
+      sourcemap: true
     },
     resolve: {
       alias: {
