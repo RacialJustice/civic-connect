@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -38,6 +38,7 @@ import ProfileOverview from "@/pages/profile/overview";
 import SettingsPage from "@/pages/profile/settings";
 import SecurityPage from "@/pages/profile/security";
 import EmergencyServicesPage from "@/pages/emergency-services";
+import { DrawerProvider } from './components/DrawerContext';
 
 function App() {
   return (
@@ -48,148 +49,150 @@ function App() {
             <SessionContextProvider supabaseClient={supabase}>
               <AuthProvider>
                 <ChatProvider>
-                  <Layout>
-                    <Routes>
-                      <Route path="/auth" element={
-                        <Suspense fallback={<Loader />}>
-                          <AuthPage />
-                        </Suspense>
-                      } />
-                      <Route path="/" element={
-                        <ProtectedRoute>
+                  <DrawerProvider>
+                    <Layout>
+                      <Routes>
+                        <Route path="/auth" element={
                           <Suspense fallback={<Loader />}>
-                            <HomePage />
+                            <AuthPage />
                           </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/profile" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <ProfilePage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      }>
-                        <Route index element={<ProfileOverview />} />
-                        <Route path="dashboard" element={<Dashboard />} />
-                        <Route path="notifications" element={<NotificationsPage />} />
-                        <Route path="settings" element={<SettingsPage />} />
-                        <Route path="security" element={<SecurityPage />} />
-                      </Route>
-                      <Route path="/leaders" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <LeadersPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/forums" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <ForumsPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/forums/:id" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <ForumPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/events" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <EventsPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/events/create" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <CreateEventPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/events/:id" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <EventPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/notifications" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <NotificationsPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/documents" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <DocumentsPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/calendar" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <CalendarPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/reports" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <ReportsPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/local-updates" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <LocalUpdatesPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/projects" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <ProjectsPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/emergency-contacts" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <EmergencyContactsPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/emergency-alert" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <EmergencyAlertPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/polls" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <Polls />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/emergency-services" element={
-                        <ProtectedRoute>
-                          <Suspense fallback={<Loader />}>
-                            <EmergencyServicesPage />
-                          </Suspense>
-                        </ProtectedRoute>
-                      } />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Layout>
+                        } />
+                        <Route path="/" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <HomePage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/profile" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <ProfilePage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        }>
+                          <Route index element={<ProfileOverview />} />
+                          <Route path="dashboard" element={<Dashboard />} />
+                          <Route path="notifications" element={<NotificationsPage />} />
+                          <Route path="settings" element={<SettingsPage />} />
+                          <Route path="security" element={<SecurityPage />} />
+                        </Route>
+                        <Route path="/leaders" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <LeadersPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/forums" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <ForumsPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/forums/:id" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <ForumPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/events" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <EventsPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/events/create" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <CreateEventPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/events/:id" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <EventPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/notifications" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <NotificationsPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/documents" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <DocumentsPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/calendar" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <CalendarPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/reports" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <ReportsPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/local-updates" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <LocalUpdatesPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/projects" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <ProjectsPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/emergency-contacts" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <EmergencyContactsPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/emergency-alert" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <EmergencyAlertPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/polls" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <Polls />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/emergency-services" element={
+                          <ProtectedRoute>
+                            <Suspense fallback={<Loader />}>
+                              <EmergencyServicesPage />
+                            </Suspense>
+                          </ProtectedRoute>
+                        } />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Layout>
+                  </DrawerProvider>
                   <Toaster />
                 </ChatProvider>
               </AuthProvider>

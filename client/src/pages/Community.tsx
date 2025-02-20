@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/container";
 
-export const Community = () => {
+export default function Community() {
   return (
     <Container>
       <h1 className="text-4xl font-bold mb-6">Community Hub</h1>
@@ -20,4 +20,4 @@ export const Community = () => {
       </div>
     </Container>
   );
-};
+}

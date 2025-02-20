@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-export const Support = () => {
+export default function Support() {
   return (
     <Container>
       <h1 className="text-4xl font-bold mb-6">Support</h1>
@@ -36,4 +36,4 @@ export const Support = () => {
       </div>
     </Container>
   );
-};
+}

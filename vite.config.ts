@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
     root: './client',
     build: {
       outDir: '../dist',
+      copyPublicDir: true,
       emptyOutDir: true,
       rollupOptions: {
         output: {

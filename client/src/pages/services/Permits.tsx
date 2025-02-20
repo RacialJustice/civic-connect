@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const Permits = () => {
+export default function Permits() {
   return (
     <Container>
       <h1 className="text-4xl font-bold mb-6">Permits & Licenses</h1>

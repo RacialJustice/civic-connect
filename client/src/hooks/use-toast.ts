@@ -1,5 +1,6 @@
 // src/hooks/use-toast.ts
 import * as React from "react"
+import { toast as hotToast } from 'react-hot-toast';
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -8,7 +9,6 @@ export type ToastActionElement = React.ReactElement
 
 export type Toast = {
   id: string
-  title?: string
   description?: string
   action?: ToastActionElement
 }

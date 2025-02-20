@@ -85,6 +85,50 @@ export type SelectPoll = typeof polls.$inferSelect;
 export type InsertPollVote = typeof pollVotes.$inferInsert;
 export type SelectPollVote = typeof pollVotes.$inferSelect;
 
+export interface SelectEmergencyService {
+  id: number;
+  name: string;
+  phone: string;
+  type: string;
+  available24h: boolean;
+  location: string;
+}
+
+export interface SelectEvent {
+  id: number;
+  title: string;
+  date: string;
+  constituency: string;
+  isNotified?: boolean;
+}
+
+export interface SelectForum {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: Date;
+}
+
+export interface SelectOfficial {
+  id: number;
+  name: string;
+  role: string;
+  constituency: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  village: string | null;
+  ward: string | null;
+  constituency: string | null;
+  county: string | null;
+}
+
+// Add other necessary types...
+
 // Database type
 export type Database = {
   public: {

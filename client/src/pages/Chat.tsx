@@ -1,6 +1,6 @@
 import { useChat } from '../hooks/use-chat';
 
-export const Chat = () => {
+export default function Chat() {
   const { messages, sendMessage, isConnected } = useChat();
 
   return (
@@ -16,4 +16,4 @@ export const Chat = () => {
       </div>
     </div>
   );
-};
+}

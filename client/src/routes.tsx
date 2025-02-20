@@ -1,35 +1,85 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorFallback } from '@/components/error-fallback';
+import { Loader } from '@/components/ui/loader';
 
-// Only import routes that have implemented components
-const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
-const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })));
-const Community = lazy(() => import('./pages/Community').then(m => ({ default: m.Community })));
-const Chat = lazy(() => import('./pages/Chat').then(m => ({ default: m.Chat })));
-const Profile = lazy(() => import('./pages/Profile').then(m => ({ default: m.Profile })));
+// Lazy load components with default exports
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Community = lazy(() => import('./pages/Community'));
+const Chat = lazy(() => import('./pages/Chat'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 // Services
-const Permits = lazy(() => import('./pages/services/Permits').then(m => ({ default: m.Permits })));
-const Payments = lazy(() => import('./pages/services/Payments').then(m => ({ default: m.Payments })));
-const Support = lazy(() => import('./pages/services/Support').then(m => ({ default: m.Support })));
+const Permits = lazy(() => import('./pages/services/Permits'));
+const Payments = lazy(() => import('./pages/services/Payments'));
+const Support = lazy(() => import('./pages/services/Support'));
 
-const Loading = () => <div className="p-4 flex justify-center">Loading...</div>;
+const Loading = () => <Loader className="mx-auto my-8" />;
 
 export function AppRoutes() {
   return (
-    <Suspense fallback={<Loading />}>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/profile" element={<Profile />} />
-        
-        {/* Services */}
-        <Route path="/services/permits" element={<Permits />} />
-        <Route path="/services/payments" element={<Payments />} />
-        <Route path="/services/support" element={<Support />} />
+        <Route path="/" element={
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<Loading />}>
+              <Home />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="/about" element={
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<Loading />}>
+              <About />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="/community" element={
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<Loading />}>
+              <Community />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="/chat" element={
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<Loading />}>
+              <Chat />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="/profile" element={
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<Loading />}>
+              <Profile />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="/services/permits" element={
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<Loading />}>
+              <Permits />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="/services/payments" element={
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<Loading />}>
+              <Payments />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="/services/support" element={
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<Loading />}>
+              <Support />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Suspense>
+    </ErrorBoundary>
   );
 }

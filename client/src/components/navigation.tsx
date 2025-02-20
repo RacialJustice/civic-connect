@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link, useLocation } from "react-router-dom";
 import { LogOut, Menu, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -16,75 +16,95 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { useState } from 'react';
 
 export function Navigation() {
+  const location = useLocation();
   const { user, logoutMutation } = useAuth();
   const isMobile = useIsMobile();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Helper function to check if a link is active
+  const isActive = (path: string) => location.pathname === path;
 
   const mainNavLinks = [
-    { href: "/", label: "Home" },
-    { href: "/emergency-services", label: "Emergency Services" },
+    { to: "/", label: "Home" },
+    { to: "/emergency-services", label: "Emergency Services" },
   ];
 
   const engagementLinks = [
-    { href: "/leaders", label: "Leaders" },
-    { href: "/forums", label: "Forums" },
-    { href: "/events", label: "Events" },
-    { href: "/polls", label: "Polls & Surveys" },
-    { href: "/community", label: "Community" },
+    { to: "/leaders", label: "Leaders" },
+    { to: "/forums", label: "Forums" },
+    { to: "/events", label: "Events" },
+    { to: "/polls", label: "Polls & Surveys" },
+    { to: "/community", label: "Community" },
   ];
 
   const resourcesLinks = [
-    { href: "/documents", label: "Documents" },
-    { href: "/calendar", label: "Calendar" },
-    { href: "/reports", label: "Reports" },
-    { href: "/local-updates", label: "Local Updates" },
-    { href: "/projects", label: "Development Projects" },
+    { to: "/documents", label: "Documents" },
+    { to: "/calendar", label: "Calendar" },
+    { to: "/reports", label: "Reports" },
+    { to: "/local-updates", label: "Local Updates" },
+    { to: "/projects", label: "Development Projects" },
   ];
 
   const servicesLinks = [
-    { href: "/services/permits", label: "Permits & Licenses" },
-    { href: "/services/payments", label: "Payments" },
-    { href: "/services/support", label: "Support" },
+    { to: "/services/permits", label: "Permits & Licenses" },
+    { to: "/services/payments", label: "Payments" },
+    { to: "/services/support", label: "Support" },
   ];
 
   const accountLinks = [
-    { href: "/profile", label: "Profile Overview" },
-    { href: "/profile/notifications", label: "Notifications" },
-    { href: "/profile/settings", label: "Settings" },
-    { href: "/profile/security", label: "Security" },
+    { to: "/profile", label: "Profile Overview" },
+    { to: "/profile/notifications", label: "Notifications" },
+    { to: "/profile/settings", label: "Settings" },
+    { to: "/profile/security", label: "Security" },
   ];
 
   const adminLinks = user?.role === "admin" ? [
-    { href: "/admin/moderation", label: "Content Moderation" },
-    { href: "/admin/users", label: "User Management" },
-    { href: "/admin/analytics", label: "Analytics" },
+    { to: "/admin/moderation", label: "Content Moderation" },
+    { to: "/admin/users", label: "User Management" },
+    { to: "/admin/analytics", label: "Analytics" },
   ] : [];
 
-  const NavDropdown = ({ label, links }: { label: string; links: { href: string; label: string; }[] }) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center gap-1">
-          {label} <ChevronDown className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {links.map((link) => (
-          <DropdownMenuItem key={link.href}>
-            <Link href={link.href} className="w-full">
-              {link.label}
-            </Link>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+  const NavDropdown = ({ label, links }: { label: string; links: { to: string; label: string; }[] }) => {
+    const [open, setOpen] = useState(false);
+
+    return (
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="flex items-center gap-1">
+            {label} <ChevronDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {links.map((link) => (
+            <DropdownMenuItem 
+              key={link.to} 
+              asChild
+              onClick={() => setOpen(false)}
+              className={isActive(link.to) ? 'bg-accent' : ''}
+            >
+              <Link to={link.to} className="w-full block">
+                {link.label}
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
 
   const NavContent = () => (
     <>
       {mainNavLinks.map((link) => (
-        <Link key={link.href} href={link.href}>
-          <Button variant="ghost">{link.label}</Button>
+        <Link key={link.to} to={link.to} className="inline-block">
+          <Button 
+            variant={isActive(link.to) ? "secondary" : "ghost"}
+            className={isActive(link.to) ? "bg-primary-foreground" : ""}
+          >
+            {link.label}
+          </Button>
         </Link>
       ))}
       <NavDropdown label="Engagement" links={engagementLinks} />
@@ -95,11 +115,16 @@ export function Navigation() {
     </>
   );
 
-  const MobileNavLinks = ({ links, label }: { links: { href: string; label: string; }[]; label: string }) => (
+  const MobileNavLinks = ({ links, label }: { links: { to: string; label: string; }[]; label: string }) => (
     <div className="space-y-2">
       <h3 className="font-semibold text-sm text-muted-foreground mb-1">{label}</h3>
       {links.map((link) => (
-        <Link key={link.href} href={link.href} className="block px-2 py-1.5 hover:bg-accent rounded-md">
+        <Link 
+          key={link.to} 
+          to={link.to} 
+          className={`block px-2 py-1.5 hover:bg-accent rounded-md ${isActive(link.to) ? 'bg-accent' : ''}`}
+          onClick={() => setIsDrawerOpen(false)}
+        >
           {link.label}
         </Link>
       ))}
@@ -111,11 +136,11 @@ export function Navigation() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <div className="text-2xl font-bold cursor-pointer">
-            <Link href="/">Civic Connect</Link>
+            <Link to="/">Civic Connect</Link>
           </div>
 
           {isMobile ? (
-            <Drawer>
+            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
               <DrawerTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-6 w-6" />

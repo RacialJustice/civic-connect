@@ -8,10 +8,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export const Payments = () => {
+export default function Payments() {
   return (
     <Container>
       <h1 className="text-4xl font-bold mb-6">Payments</h1>
+      <p className="text-lg">Make payments for various services online.</p>
       
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -36,4 +37,4 @@ export const Payments = () => {
       </div>
     </Container>
   );
-};
+}
