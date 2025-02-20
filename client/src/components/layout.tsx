@@ -1,5 +1,5 @@
 import { Footer } from './footer';
-import { Navigation } from './Navigation';
+import { Navigation } from "@/components/navigation";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
