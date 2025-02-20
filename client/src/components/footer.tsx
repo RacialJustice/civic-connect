@@ -36,6 +36,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/emergency-alert" className="text-muted-foreground hover:text-primary">
+                  SOS
+                </Link>
+              </li>
+              <li>
                 <Link to="/faq" className="text-muted-foreground hover:text-primary">
                   FAQ
                 </Link>
@@ -48,11 +53,11 @@ export function Footer() {
             <ul className="mt-4 space-y-2 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                123 Civic Street, City
+                Nairobi, City
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="h-4 w-4" />
-                (555) 123-4567
+                (254) 720-123-456
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
@@ -79,7 +84,7 @@ export function Footer() {
 
         <div className="flex flex-col items-center border-t py-6 md:flex-row md:justify-between">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} CivicConnect. All rights reserved.
+            © {new Date().getFullYear()} CivicConnect. All rights reserved. Made possible through the generous support of The Racial Justice Network.
           </p>
           <div className="mt-4 flex space-x-4 text-sm text-muted-foreground md:mt-0">
             <Link to="/privacy" className="hover:text-primary">

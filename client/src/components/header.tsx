@@ -33,7 +33,6 @@ export function Header() {
     { href: "/polls", label: "Polls" },
     { href: "/events", label: "Events" },
     { href: "/emergency-contacts", label: "Emergency" },
-    { href: "/dashboard", label: "Dashboard" },
   ];
 
   const handleNavigation = () => {

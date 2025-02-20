@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,6 @@ export function Navigation() {
 
   const mainNavLinks = [
     { href: "/", label: "Home" },
-    { href: "/dashboard", label: "Dashboard" },
     { href: "/emergency-services", label: "Emergency Services" },
   ];
 
@@ -51,9 +49,10 @@ export function Navigation() {
   ];
 
   const accountLinks = [
-    { href: "/profile", label: "Profile" },
-    { href: "/notifications", label: "Notifications" },
-    { href: "/security", label: "Security" },
+    { href: "/profile", label: "Profile Overview" },
+    { href: "/profile/notifications", label: "Notifications" },
+    { href: "/profile/settings", label: "Settings" },
+    { href: "/profile/security", label: "Security" },
   ];
 
   const adminLinks = user?.role === "admin" ? [

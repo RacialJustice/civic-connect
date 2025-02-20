@@ -7,12 +7,20 @@ import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Header } from "@/components/header";
-import { Link } from 'wouter';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || "");
+  const location = useLocation();
+  
+  const profileNavItems = [
+    { href: "/profile", label: "Overview" },
+    { href: "/profile/notifications", label: "Notifications" },
+    { href: "/profile/settings", label: "Settings" },
+    { href: "/profile/security", label: "Security" },
+  ];
 
   const updateProfileMutation = useMutation({
     mutationFn: async (newName: string) => {
@@ -41,73 +49,30 @@ export default function ProfilePage() {
   });
 
   return (
-    <div>
-      {user?.role === 'admin' && (
-        <div className="container mx-auto px-4 pt-4">
-          <Link href="/profile/dashboard">
-            <Button variant="outline">Admin Dashboard</Button>
-          </Link>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-6">Your Profile</h1>
+      
+      <div className="flex flex-col md:flex-row gap-6">
+        <nav className="w-full md:w-64 space-y-1">
+          {profileNavItems.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={`block px-4 py-2 rounded-lg ${
+                location.pathname === item.href 
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        
+        <div className="flex-1">
+          <Outlet />
         </div>
-      )}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-medium mb-2">Email</h3>
-                <p className="text-muted-foreground">{user?.email}</p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2">Name</h3>
-                {isEditing ? (
-                  <div className="flex gap-2">
-                    <Input 
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="max-w-sm"
-                    />
-                    <Button 
-                      onClick={() => updateProfileMutation.mutate(name)}
-                      disabled={updateProfileMutation.isPending}
-                    >
-                      Save
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsEditing(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <p className="text-muted-foreground">{user?.name}</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      Edit
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Location</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LocationForm />
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
