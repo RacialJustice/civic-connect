@@ -1,13 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
-import { getEnv } from '@shared/env';
 
-const env = getEnv();
-const supabaseUrl = env.VITE_SUPABASE_URL;
-const supabaseKey = env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase configuration:', { url: !!supabaseUrl, key: !!supabaseKey });
-  throw new Error('Missing required Supabase configuration');
+if (!supabaseUrl) {
+  throw new Error('Missing VITE_SUPABASE_URL');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+if (!supabaseAnonKey) {
+  throw new Error('Missing VITE_SUPABASE_ANON_KEY');
+}
+
+// Validate URL format
+try {
+  new URL(supabaseUrl);
+} catch (e) {
+  throw new Error(`Invalid SUPABASE_URL: ${supabaseUrl}`);
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
