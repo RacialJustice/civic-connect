@@ -1,75 +1,54 @@
-import { useLeaders } from "@/hooks/use-leaders";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
-import { WithLocation } from '@/components/with-location';
-import { useLocation } from '@/hooks/use-location';
+import { useLeaders } from "@/hooks/use-leaders";
+import { Card } from "@/components/ui/card";
+import { Leaders } from "@/components/leaders";
 
 export default function LeadersPage() {
-  const { location, loading: locationLoading } = useLocation();
-
-  const { data: leaders = [], isLoading } = useQuery({
-    queryKey: ['leaders', location?.constituency],
+  const { user } = useAuth();
+  
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
     queryFn: async () => {
-      if (!location) return [];
-
-      console.log('Fetching leaders for:', location);
-
-      const { data: constituencyLeaders, error: constituencyError } = await supabase
-        .from('constituency_leaders')
-        .select('*')
-        .eq('constituency', location.constituency)
+      const { data } = await supabase
+        .from('profiles')
+        .select('location_constituency, location_county, constituency, county')
+        .eq('user_id', user?.id)
         .single();
-
-      const { data: countyLeaders, error: countyError } = await supabase
-        .from('governors')
-        .select('*')
-        .eq('county', location.county)
-        .single();
-
-      console.log('Leaders query results:', { 
-        constituencyLeaders, 
-        countyLeaders,
-        constituencyError,
-        countyError
-      });
-
-      if (constituencyError && countyError) {
-        throw new Error('Failed to fetch leaders');
-      }
-
-      return [
-        ...(constituencyLeaders ? [constituencyLeaders] : []),
-        ...(countyLeaders ? [countyLeaders] : [])
-      ];
+      return data;
     },
-    enabled: !!location
+    enabled: !!user?.id,
+    select: (data) => ({
+      location_constituency: data?.location_constituency || data?.constituency,
+      location_county: data?.location_county || data?.county
+    })
   });
 
-  if (locationLoading || isLoading) {
-    return <div>Loading leaders...</div>;
-  }
+  const { data: leaders, isLoading } = useLeaders(
+    profile?.location_constituency,
+    profile?.location_county
+  );
 
-  if (!location) {
+  if (!profile?.location_constituency) {
     return (
-      <Card className="p-6">
-        <h2>Location Required</h2>
-        <p>Please set your location to see your local leaders.</p>
-      </Card>
+      <div className="container mx-auto p-6">
+        <Card className="p-6 text-center">
+          <p className="text-lg">Please set your location first</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Update your location in your profile settings to see your local leaders.
+          </p>
+        </Card>
+      </div>
     );
   }
 
-  if (leaders.length === 0) {
-    return (
-      <Card className="p-6">
-        <h2>No Leaders Found</h2>
-        <p>No leaders found for {location.constituency}, {location.county}</p>
-      </Card>
-    );
-  }
-
-  // ...rest of the component...
+  return (
+    <Leaders 
+      leaders={leaders}
+      isLoading={isLoading}
+      constituency={profile.location_constituency}
+      county={profile.location_county}
+    />
+  );
 }

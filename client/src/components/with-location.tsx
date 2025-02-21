@@ -1,3 +1,4 @@
+//client/src/components/with-location.tsx
 import { useLocation } from '@/hooks/use-location';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
