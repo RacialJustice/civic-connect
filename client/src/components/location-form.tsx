@@ -25,7 +25,21 @@ type LocationFormValues = z.infer<typeof locationSchema>;
 function LocationFormContent() {
  const { user } = useAuth();
  const { toast } = useToast();
+ const [isSubmitting, setIsSubmitting] = useState(false);
  const [county, setCounty] = useState<string | null>(null);
+
+ // Debug auth state on mount and changes
+ useEffect(() => {
+   const checkAuth = async () => {
+     const { data: { session } } = await supabase.auth.getSession();
+     console.log("Auth Check:", {
+       sessionUser: session?.user,
+       contextUser: user,
+       userId: user?.id
+     });
+   };
+   checkAuth();
+ }, [user]);
 
  const form = useForm<LocationFormValues>({
    resolver: zodResolver(locationSchema),
@@ -97,38 +111,41 @@ function LocationFormContent() {
  });
 
  // Remove mutation code and replace with direct submission
- const [isSubmitting, setIsSubmitting] = useState(false);
 
  async function onSubmit(data: LocationFormValues) {
    try {
-     if (!user) {
+     const { data: { session } } = await supabase.auth.getSession();
+     
+     if (!session?.user) {
+       console.error("No active session");
        toast({
-         title: "Error",
-         description: "User not authenticated, please login again",
+         title: "Session Error",
+         description: "Please sign in again",
          variant: "destructive"
        });
        return;
      }
 
-     console.log("Form Submit - User ID:", user.id, "Type:", typeof user.id);
-     
+     console.log("Submitting with user ID:", session.user.id);
+
      const profileData = {
-       user_id: user.id, // Should be a UUID string
-       location_village: data.village || "",
-       location_ward: data.ward || "",
+       id: session.user.id,
+       user_id: session.user.id,
+       location_village: data.village || null,
+       location_ward: data.ward || null,
        location_constituency: data.constituency,
        location_county: county,
        updated_at: new Date().toISOString()
      };
 
-     console.log("Profile Data:", profileData);
-
      const { error } = await supabase
        .from('profiles')
-       .upsert(profileData);
+       .upsert(profileData)
+       .select()
+       .single();
 
      if (error) {
-       console.error("Upsert Error:", error);
+       console.error("Update failed:", error);
        throw error;
      }
 
@@ -137,13 +154,24 @@ function LocationFormContent() {
        description: "Location updated successfully"
      });
    } catch (error: any) {
-     console.error('Error:', error);
+     console.error("Submit error:", error);
      toast({
        title: "Error",
-       description: error.message || "Failed to update location",
+       description: "Failed to update location. Please try again.",
        variant: "destructive"
      });
+   } finally {
+     setIsSubmitting(false);
    }
+ }
+
+ // Add loading state for no user
+ if (!user) {
+   return (
+     <div className="p-4 text-center">
+       <p>Please sign in to update your location</p>
+     </div>
+   );
  }
 
  return (

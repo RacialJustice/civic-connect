@@ -191,7 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const user = session.user;
       return {
-        id: parseInt(user.id), // Convert string ID to number
+        id: user.id, // Keep as string, don't convert to number
         email: user.email!,
         name: user.user_metadata.name,
         village: user.user_metadata.village,
@@ -248,11 +248,14 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
 
-  // Add debug logging
+  // Debug auth state
   useEffect(() => {
-    if (context.user) {
-      console.log("Auth - User ID:", context.user.id, "Type:", typeof context.user.id);
-    }
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session:", session);
+      console.log("Context user:", context.user);
+    };
+    checkSession();
   }, [context.user]);
 
   return context;
