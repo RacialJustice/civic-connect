@@ -1,14 +1,40 @@
 import { useLeaders } from "@/hooks/use-leaders";
-import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LeadersPage() {
-  const { data: leaders, isLoading, error } = useLeaders();
   const { user } = useAuth();
+  
+  // Get user profile with location data
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('location_constituency, location_county')
+        .eq('user_id', user?.id)
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id
+  });
+  
+  // Get leaders based on profile location
+  const { data: leaders, isLoading: leadersLoading, error } = useLeaders(
+    profile?.location_constituency,
+    profile?.location_county
+  );
+  
+  const isLoading = profileLoading || leadersLoading;
 
-  if (!user?.constituency) {
+  // Check if location is set
+  if (!profileLoading && (!profile?.location_constituency || !profile?.location_county)) {
     return (
       <div className="container mx-auto p-6">
         <Card className="p-6 text-center">
@@ -44,14 +70,14 @@ export default function LeadersPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Your Local Leaders</h1>
           <p className="text-muted-foreground mt-1">
-            Location: {user?.constituency}, {user?.county}
+            Location: {profile?.location_constituency}, {profile?.location_county}
           </p>
         </div>
         
         <Card className="p-6 text-center">
           <p className="text-lg">No leaders found for your location.</p>
           <p className="text-sm text-muted-foreground mt-2">
-            We are currently updating our database with leaders for {user?.county} County.
+            We are currently updating our database with leaders for {profile?.location_county} County.
           </p>
         </Card>
       </div>
@@ -63,8 +89,8 @@ export default function LeadersPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Your Local Leaders</h1>
         <p className="text-muted-foreground mt-1">
-          Leaders representing {user.constituency}
-          {user.county && `, ${user.county} County`}
+          Leaders representing {profile?.location_constituency}
+          {profile?.location_county && `, ${profile?.location_county} County`}
         </p>
       </div>
 
@@ -75,7 +101,7 @@ export default function LeadersPage() {
               <div className="flex items-center gap-4">
                 <Avatar>
                   <AvatarImage src={leader.image_url} />
-                  <AvatarFallback>{leader.name[0]}</AvatarFallback>
+                  <AvatarFallback>{leader.name?.[0] || "?"}</AvatarFallback>
                 </Avatar>
                 <div>
                   <CardTitle className="text-lg">{leader.name}</CardTitle>
@@ -85,6 +111,9 @@ export default function LeadersPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm mb-2">{leader.area}</p>
+              {leader.party && (
+                <p className="text-sm text-muted-foreground">Party: {leader.party}</p>
+              )}
               {leader.contact && (
                 <p className="text-sm text-muted-foreground">{leader.contact}</p>
               )}

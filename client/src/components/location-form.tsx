@@ -67,18 +67,19 @@ function LocationFormContent() {
    enabled: !!user?.id
  });
 
- // Set form defaults from profile
+ // Set form defaults from user metadata
  useEffect(() => {
-   if (profile) {
+   if (user?.user_metadata) {
+     console.log('Setting form from metadata:', user.user_metadata);
      form.reset({
-       village: profile.location_village || "",
-       ward: profile.location_ward || "",
-       constituency: profile.location_constituency || "",
-       county: profile.location_county || ""
+       village: user.user_metadata.village || "",
+       ward: user.user_metadata.ward || "",
+       constituency: user.user_metadata.constituency || "",
+       county: user.user_metadata.county || ""
      });
-     setCounty(profile.location_county);
+     setCounty(user.user_metadata.county || null);
    }
- }, [profile]);
+ }, [user]);
 
  // Updated constituencies query
  const { data: constituencies = [], isLoading } = useQuery({
@@ -126,6 +127,20 @@ function LocationFormContent() {
        return;
      }
 
+     console.log("Updating metadata with:", data);
+
+     // Update user metadata
+     const { error: updateError } = await supabase.auth.updateUser({
+       data: {
+         constituency: data.constituency,
+         county: county,
+         ward: data.ward || "",
+         village: data.village || ""
+       }
+     });
+
+     if (updateError) throw updateError;
+
      console.log("Submitting with user ID:", session.user.id);
 
      const profileData = {
@@ -164,6 +179,37 @@ function LocationFormContent() {
      setIsSubmitting(false);
    }
  }
+
+ const checkLeaders = async (constituency: string, county: string) => {
+  const baseConstituency = constituency.split(' (')[0];
+  console.log('Checking leaders for:', { baseConstituency, county });
+  
+  // Check if constituency leader exists
+  const { data: constituencyLeaderData, error } = await supabase
+    .from('constituency_leaders')
+    .select('*')  // Changed to select all fields for debugging
+    .eq('constituency', baseConstituency)
+    .maybeSingle();
+
+  console.log('Check leaders query result:', { constituencyLeaderData, error });
+
+  const { data: governorData } = await supabase
+    .from('governors')
+    .select('name')
+    .eq('county', county)
+    .single();
+
+  if (!constituencyLeaderData || !governorData) {
+    toast({
+      title: "Location Error",
+      description: "We couldn't find leaders for this location. Please try another.",
+      status: "error"
+    });
+    return false;
+  }
+
+  return true;
+};
 
  // Add loading state for no user
  if (!user) {

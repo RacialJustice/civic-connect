@@ -1,10 +1,30 @@
-import { useLeaders } from '@/hooks/use-leaders';
-import { useAuth } from '@/hooks/use-auth';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/use-auth";
+import { useLeaders } from "@/hooks/use-leaders";
+import { Card } from "@/components/ui/card";
 import { Container } from '@/components/ui/container';
 
 export function LeadersPage() {
-  const { data: leaders, isLoading } = useLeaders();
   const { user } = useAuth();
+  
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('location_constituency, location_county')
+        .eq('user_id', user?.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
+  const { data: leaders, isLoading } = useLeaders(
+    profile?.location_constituency,
+    profile?.location_county
+  );
 
   const groupedLeaders = leaders?.reduce((acc, leader) => {
     const level = leader.level;
@@ -14,6 +34,19 @@ export function LeadersPage() {
     acc[level].push(leader);
     return acc;
   }, {} as Record<string, typeof leaders>);
+
+  if (!profile?.location_constituency) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card className="p-6 text-center">
+          <p className="text-lg">Please set your location first</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Update your location in your profile settings to see your local leaders.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <Container>

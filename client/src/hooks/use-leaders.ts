@@ -1,49 +1,119 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from './use-auth';
-import { type SelectOfficial } from '@shared/schema';
+// hooks/use-leaders.ts
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "./use-auth";
+
+export type Leader = {
+  id: string;
+  name: string;
+  role: string;
+  area: string;
+  image_url?: string;
+  contact?: string;
+  party: string;
+};
 
 export function useLeaders() {
   const { user } = useAuth();
+  console.log('UseLeaders - User metadata:', {
+    rawUser: user,
+    metadata: user?.user_metadata,
+    constituency: user?.user_metadata?.constituency,
+    county: user?.user_metadata?.county
+  });
+  
+  // Get constituency from user metadata
+  const userConstituency = user?.user_metadata?.constituency;
+  const userCounty = user?.user_metadata?.county;
+  const baseConstituency = userConstituency?.trim();
 
-  return useQuery<SelectOfficial[]>({
-    queryKey: ['leaders', user?.ward, user?.constituency, user?.county],
+  return useQuery<Leader[]>({
+    queryKey: ['leaders', userConstituency, userCounty],
     queryFn: async () => {
-      if (!user?.county) return [];
-
-      let query = supabase
-        .from('officials')
-        .select('*')
-        .eq('status', 'active');
-
-      // Build location filters
-      const filters = [];
-      if (user.ward) filters.push(`ward.eq.${user.ward}`);
-      if (user.constituency) filters.push(`constituency.eq.${user.constituency}`);
-      if (user.county) filters.push(`county.eq.${user.county}`);
-
-      // Combine filters with OR to get all leaders at each level
-      if (filters.length > 0) {
-        query = query.or(filters.join(','));
+      if (!baseConstituency || !userCounty) {
+        return [];
       }
 
-      // Order by level importance
-      const levelPriority = { 'ward': 1, 'constituency': 2, 'county': 3, 'national': 4 };
+      // First get all constituencies to debug
+      const { data: allConstituencies } = await supabase
+        .from('constituency_leaders')
+        .select('constituency');
       
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching leaders:', error);
-        throw error;
-      }
-
-      // Sort leaders by level
-      return (data || []).sort((a, b) => {
-        const levelA = levelPriority[a.level as keyof typeof levelPriority] || 0;
-        const levelB = levelPriority[b.level as keyof typeof levelPriority] || 0;
-        return levelA - levelB;
+      console.log('Debug - All constituencies:', {
+        available: allConstituencies?.map(c => c.constituency),
+        searching: baseConstituency,
+        exact: allConstituencies?.some(c => c.constituency === baseConstituency),
+        caseInsensitive: allConstituencies?.some(c => 
+          c.constituency.toLowerCase() === baseConstituency.toLowerCase()
+        )
       });
+
+      // Try case-insensitive search
+      const { data: constituencyLeaderData, error: constituencyError } = await supabase
+        .from('constituency_leaders')
+        .select('name, constituency, party')
+        .ilike('constituency', baseConstituency)
+        .maybeSingle();
+
+      console.log('Leader query results:', {
+        searching: baseConstituency,
+        found: constituencyLeaderData,
+        error: constituencyError?.message
+      });
+
+      // Fetch governor with debug logging
+      const { data: governorData, error: governorError } = await supabase
+        .from('governors')
+        .select('*')
+        .eq('county', userCounty)
+        .single();
+
+      console.log('Governor query:', {
+        county: userCounty,
+        result: governorData,
+        error: governorError
+      });
+
+      const leaders: Leader[] = [];
+      
+      if (constituencyLeaderData) {
+        leaders.push({
+          id: `mp-${constituencyLeaderData.name}`,
+          name: constituencyLeaderData.name,
+          role: 'Member of Parliament',
+          area: constituencyLeaderData.constituency,
+          party: constituencyLeaderData.party,
+          contact: ''
+        });
+      } else {
+        console.log('No constituency leader found for:', {
+          constituency: baseConstituency,
+          availableConstituencies: allConstituencies?.length
+        });
+      }
+      
+      if (governorData) {
+        leaders.push({
+          id: `governor-${governorData.name}`,
+          name: governorData.name,
+          role: 'Governor',
+          area: `${governorData.county} County`,
+          party: governorData.party,
+          contact: governorData.email || governorData.contact || ''
+        });
+      }
+
+      if (leaders.length === 0) {
+        console.log('Leaders query debug:', {
+          constituency: baseConstituency,
+          county: userCounty,
+          constituencyResult: constituencyLeaderData,
+          constituencyError: constituencyError?.message
+        });
+      }
+
+      return leaders;
     },
-    enabled: !!user?.county
+    enabled: !!baseConstituency && !!userCounty
   });
 }
