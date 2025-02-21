@@ -189,26 +189,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => {
       if (!session?.user) return null;
 
-      const user = session.user;
+      // Get both user and profile data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
       return {
-        id: user.id, // Keep as string, don't convert to number
-        email: user.email!,
-        name: user.user_metadata.name,
-        village: user.user_metadata.village,
-        ward: user.user_metadata.ward,
-        constituency: user.user_metadata.constituency,
-        county: user.user_metadata.county,
-        country: user.user_metadata.country || "Kenya",
-        role: user.user_metadata.role || "citizen",
-        emailVerified: user.email_confirmed_at !== null,
-        profileComplete: user.user_metadata.profile_complete || false,
-        registrationStep: user.user_metadata.registration_step || "location",
+        id: session.user.id,
+        email: session.user.email!,
+        name: session.user.user_metadata.name,
+        constituency: profile?.location_constituency || null,
+        ward: profile?.location_ward || null,
+        county: profile?.location_county || null,
+        village: session.user.user_metadata.village,
+        country: session.user.user_metadata.country || "Kenya",
+        role: session.user.user_metadata.role || "citizen",
+        emailVerified: session.user.email_confirmed_at !== null,
+        profileComplete: session.user.user_metadata.profile_complete || false,
+        registrationStep: session.user.user_metadata.registration_step || "location",
         password: "", // Required by schema but not used
-        createdAt: user.created_at ? new Date(user.created_at) : null,
-        interests: user.user_metadata.interests || [],
+        createdAt: session.user.created_at ? new Date(session.user.created_at) : null,
+        interests: session.user.user_metadata.interests || [],
         verificationToken: null,
         verificationTokenExpiry: null,
-        level: user.user_metadata.level || null
+        level: session.user.user_metadata.level || null
       };
     },
     enabled: !!session?.user,
