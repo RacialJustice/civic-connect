@@ -216,8 +216,20 @@ function App() {
                                 </Suspense>
                               </ProtectedRoute>
                             } />
-                            <Route path="/budgets" element={<Budget />} />
-                            <Route path="/budgets/:id" element={<BudgetDetail />} />
+                            <Route path="/budgets" element={
+                              <ProtectedRoute>
+                                <Suspense fallback={<Loader />}>
+                                  <Budget />
+                                </Suspense>
+                              </ProtectedRoute>
+                            } />
+                            <Route path="/budgets/:id" element={
+                              <ProtectedRoute>
+                                <Suspense fallback={<Loader />}>
+                                  <BudgetDetail />
+                                </Suspense>
+                              </ProtectedRoute>
+                            } />
                             <Route 
                               path="/admin/budgets" 
                               element={

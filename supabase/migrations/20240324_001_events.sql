@@ -1,6 +1,11 @@
--- First create the events table
-create type event_status as enum ('upcoming', 'ongoing', 'completed', 'cancelled');
+-- Create enum type if it doesn't exist
+do $$ begin
+  create type event_status as enum ('upcoming', 'ongoing', 'completed', 'cancelled');
+exception
+  when duplicate_object then null;
+end $$;
 
+-- Create the events table
 create table if not exists events (
   id uuid default gen_random_uuid() primary key,
   title text not null,
@@ -18,9 +23,19 @@ create table if not exists events (
   created_by uuid references auth.users(id)
 );
 
--- Enable RLS and create policies
+-- Enable RLS
 alter table events enable row level security;
 
+-- Drop existing policies if they exist
+do $$ begin
+  drop policy if exists "Public can view events" on events;
+  drop policy if exists "Authenticated users can create events" on events;
+  drop policy if exists "Users can update their own events" on events;
+exception
+  when undefined_object then null;
+end $$;
+
+-- Create policies
 create policy "Public can view events"
   on events for select using (true);
 
@@ -31,12 +46,12 @@ create policy "Users can update their own events"
   on events for update using (auth.uid() = created_by);
 
 -- Create indexes
-create index events_region_name_idx on events(region_name);
-create index events_region_type_idx on events(region_type);
-create index events_start_date_idx on events(start_date);
-create index events_status_idx on events(status);
+create index if not exists events_region_name_idx on events(region_name);
+create index if not exists events_region_type_idx on events(region_type);
+create index if not exists events_start_date_idx on events(start_date);
+create index if not exists events_status_idx on events(status);
 
--- Add sample events for Kabete
+-- Add sample data only if table is empty
 insert into events (
   title,
   description,
@@ -48,40 +63,31 @@ insert into events (
   organizer,
   max_attendees,
   status
-) values 
-(
-  'Kabete Town Hall Meeting',
-  'Monthly community meeting to discuss development projects and local issues',
-  now() + interval '7 days',
-  now() + interval '7 days' + interval '3 hours',
-  'Kabete Technical Institute Hall',
-  'Kabete',
-  'constituency',
-  'Constituency Office',
-  200,
-  'upcoming'
-),
-(
-  'Gitaru Youth Employment Workshop',
-  'Career guidance and entrepreneurship training for youth',
-  now() + interval '14 days',
-  now() + interval '14 days' + interval '6 hours',
-  'Gitaru Community Center',
-  'Gitaru',
-  'ward',
-  'Ward Administrator',
-  100,
-  'upcoming'
-),
-(
-  'Infrastructure Development Forum',
-  'Public participation meeting on upcoming road projects',
-  now() + interval '10 days',
-  now() + interval '10 days' + interval '2 hours',
-  'Kabete Sub-County Offices',
-  'Kabete',
-  'constituency',
-  'County Works Department',
-  150,
-  'upcoming'
-);
+)
+select * from (values
+  (
+    'Kabete Town Hall Meeting',
+    'Monthly community meeting to discuss development projects and local issues',
+    now() + interval '7 days',
+    now() + interval '7 days' + interval '3 hours',
+    'Kabete Technical Institute Hall',
+    'Kabete',
+    'constituency',
+    'Constituency Office',
+    200,
+    'upcoming'::event_status
+  ),
+  (
+    'Gitaru Youth Employment Workshop',
+    'Career guidance and entrepreneurship training for youth',
+    now() + interval '14 days',
+    now() + interval '14 days' + interval '6 hours',
+    'Gitaru Community Center',
+    'Gitaru',
+    'ward',
+    'Ward Administrator',
+    100,
+    'upcoming'::event_status
+  )
+) as new_events
+where not exists (select 1 from events limit 1);
