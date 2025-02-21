@@ -50,6 +50,7 @@ export function Navigation() {
         { to: "/reports", label: "Reports" },
         { to: "/local-updates", label: "Local Updates" },
         { to: "/projects", label: "Development Projects" },
+        { to: "/budgets", label: "Budget Allocations" }, // Added Budget Allocations link
       ]
     },
     {

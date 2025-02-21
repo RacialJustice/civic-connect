@@ -16,14 +16,16 @@ import { I18nextProvider } from 'react-i18next';
 import { Suspense, lazy } from 'react';
 import { Loader } from '@/components/ui/loader';
 import { DrawerProvider } from './components/DrawerContext';
+import { Budget } from './components/Budget';
+import { BudgetDetail } from './components/BudgetDetail';
 
 // Lazy load pages
 const HomePage = lazy(() => import('@/pages/home-page'));
 const AuthPage = lazy(() => import('@/pages/auth-page'));
 const ProfilePage = lazy(() => import('@/pages/profile-page'));
-const LeadersPage = lazy(() => import('@/pages/leaders-page'));
+const LeadersPage = lazy(() => import('@/pages/leaders-page/index'));
 const ForumsPage = lazy(() => import('@/pages/forums-page'));
-const EventsPage = lazy(() => import('@/pages/events-page'));
+const EventsPage = lazy(() => import('@/pages/events-page')); // Update this line
 const DocumentsPage = lazy(() => import('@/pages/documents'));
 const CalendarPage = lazy(() => import('@/pages/calendar'));
 const ProfileDashboard = lazy(() => import('@/pages/profile/dashboard'));
@@ -41,6 +43,7 @@ const CreateEventPage = lazy(() => import('@/pages/create-event'));
 const ForumPage = lazy(() => import('@/pages/forum-page'));
 const NotificationsPage = lazy(() => import('@/pages/profile/notifications-page'));
 const EventPage = lazy(() => import('@/pages/event-page'));
+const BudgetManagement = lazy(() => import('@/pages/admin/budget-management'));
 
 function App() {
   return (
@@ -213,6 +216,18 @@ function App() {
                                 </Suspense>
                               </ProtectedRoute>
                             } />
+                            <Route path="/budgets" element={<Budget />} />
+                            <Route path="/budgets/:id" element={<BudgetDetail />} />
+                            <Route 
+                              path="/admin/budgets" 
+                              element={
+                                <ProtectedRoute adminOnly>
+                                  <Suspense fallback={<Loader />}>
+                                    <BudgetManagement />
+                                  </Suspense>
+                                </ProtectedRoute>
+                              } 
+                            />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </div>
