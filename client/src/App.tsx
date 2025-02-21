@@ -6,7 +6,7 @@ import NotFound from "@/pages/not-found";
 import { AuthProvider } from "./hooks/use-auth";
 import { ChatProvider } from "./hooks/use-chat";
 import { ThemeProvider } from "./hooks/use-theme";
-import { ProtectedRoute } from "./lib/protected-route";
+import { ProtectedRoute } from "@/lib/protected-route";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './lib/supabase';
 import { ErrorBoundary } from "@/components/error-boundary";
