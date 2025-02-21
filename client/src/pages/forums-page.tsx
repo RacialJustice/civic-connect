@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
+import { WithLocation } from '@/components/with-location';
 
 type Forum = {
   id: number;
@@ -67,7 +67,7 @@ export default function ForumsPage() {
   };
 
   return (
-    <div>
+    <WithLocation>
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Community Forums</h1>
@@ -201,6 +201,6 @@ export default function ForumsPage() {
           )}
         </div>
       </main>
-    </div>
+    </WithLocation>
   );
 }

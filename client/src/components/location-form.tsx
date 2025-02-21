@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -27,6 +27,7 @@ function LocationFormContent() {
  const { toast } = useToast();
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [county, setCounty] = useState<string | null>(null);
+ const queryClient = useQueryClient();
 
  // Debug auth state on mount and changes
  useEffect(() => {
@@ -51,13 +52,13 @@ function LocationFormContent() {
    }
  });
 
- // Fetch current profile data
- const { data: profile } = useQuery({
+ // Update how we handle profile data
+ const { data: profile, isSuccess: profileLoaded } = useQuery({
    queryKey: ['profile', user?.id],
    queryFn: async () => {
      const { data, error } = await supabase
        .from('profiles')
-       .select('*')
+       .select('ward, constituency, county, village')
        .eq('user_id', user?.id)
        .single();
 
@@ -67,19 +68,19 @@ function LocationFormContent() {
    enabled: !!user?.id
  });
 
- // Set form defaults from user metadata
+ // Set form defaults from profile data
  useEffect(() => {
-   if (user?.user_metadata) {
-     console.log('Setting form from metadata:', user.user_metadata);
+   if (profileLoaded && profile) {
+     console.log('Setting form from profile:', profile);
      form.reset({
-       village: user.user_metadata.village || "",
-       ward: user.user_metadata.ward || "",
-       constituency: user.user_metadata.constituency || "",
-       county: user.user_metadata.county || ""
+       village: profile.village || "",
+       ward: profile.ward || "",
+       constituency: profile.constituency || "",
+       county: profile.county || ""
      });
-     setCounty(user.user_metadata.county || null);
+     setCounty(profile.county || null);
    }
- }, [user]);
+ }, [profile, profileLoaded]);
 
  // Updated constituencies query
  const { data: constituencies = [], isLoading } = useQuery({
@@ -111,74 +112,50 @@ function LocationFormContent() {
    enabled: !!form.watch('constituency')
  });
 
- // Remove mutation code and replace with direct submission
-
+ // Update onSubmit function to handle both profile and metadata
  async function onSubmit(data: LocationFormValues) {
-   try {
-     const { data: { session } } = await supabase.auth.getSession();
-     
-     if (!session?.user) {
-       console.error("No active session");
-       toast({
-         title: "Session Error",
-         description: "Please sign in again",
-         variant: "destructive"
-       });
-       return;
-     }
+  try {
+    setIsSubmitting(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.user) {
+      throw new Error("No active session");
+    }
 
-     console.log("Updating metadata with:", data);
+    // Update profiles table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: session.user.id,
+        user_id: session.user.id,
+        ward: data.ward || null,
+        constituency: data.constituency,
+        county: county,
+        village: data.village || null,
+        updated_at: new Date().toISOString()
+      });
 
-     // Update user metadata
-     const { error: updateError } = await supabase.auth.updateUser({
-       data: {
-         constituency: data.constituency,
-         county: county,
-         ward: data.ward || "",
-         village: data.village || ""
-       }
-     });
+    if (profileError) throw profileError;
 
-     if (updateError) throw updateError;
+    // Refresh the profile data query
+    queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
 
-     console.log("Submitting with user ID:", session.user.id);
-
-     const profileData = {
-       id: session.user.id,
-       user_id: session.user.id,
-       location_village: data.village || null,
-       location_ward: data.ward || null,
-       location_constituency: data.constituency,
-       location_county: county,
-       updated_at: new Date().toISOString()
-     };
-
-     const { error } = await supabase
-       .from('profiles')
-       .upsert(profileData)
-       .select()
-       .single();
-
-     if (error) {
-       console.error("Update failed:", error);
-       throw error;
-     }
-
-     toast({
-       title: "Success",
-       description: "Location updated successfully"
-     });
-   } catch (error: any) {
-     console.error("Submit error:", error);
-     toast({
-       title: "Error",
-       description: "Failed to update location. Please try again.",
-       variant: "destructive"
-     });
-   } finally {
-     setIsSubmitting(false);
-   }
- }
+    toast({
+      title: "Success",
+      description: "Location updated successfully"
+    });
+    
+  } catch (error: any) {
+    console.error("Submit error:", error);
+    toast({
+      title: "Error",
+      description: error.message || "Failed to update location. Please try again.",
+      variant: "destructive"
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+}
 
  const checkLeaders = async (constituency: string, county: string) => {
   const baseConstituency = constituency.split(' (')[0];

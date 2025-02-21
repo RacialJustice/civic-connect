@@ -1,0 +1,19 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}  last_updated: string;  description?: string;  fiscal_year: string;  amount: number;  region_name: string;  region_type: 'ward' | 'constituency' | 'county';  id: string;export interface BudgetAllocation {}  }    VITE_SUPABASE_ANON_KEY: string;    VITE_SUPABASE_URL: string;  ENV?: {interface Window {/// <reference types="vite/client" />
