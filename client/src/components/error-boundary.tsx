@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   children: React.ReactNode;
@@ -23,9 +24,16 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by error boundary:', error);
-    console.error('Error info:', errorInfo);
+    console.error('Error caught by error boundary:', {
+      error,
+      componentStack: errorInfo.componentStack
+    });
   }
+
+  private handleReset = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.href = '/'; // Redirect to home page on error
+  };
 
   public render() {
     if (this.state.hasError) {
@@ -40,12 +48,11 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 {this.state.error?.message || 'An unexpected error occurred'}
               </p>
               <Button 
-                onClick={() => {
-                  this.setState({ hasError: false, error: null });
-                  window.location.reload();
-                }}
+                onClick={this.handleReset}
+                variant="outline"
+                className="w-full"
               >
-                Try again
+                Return to Home
               </Button>
             </CardContent>
           </Card>

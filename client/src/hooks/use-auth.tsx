@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SelectUser } from "@shared/schema";
 import { queryClient } from "../lib/queryClient";
@@ -248,28 +248,12 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
 
-  const refreshUser = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Fetch user profile data
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        setUser({
-          ...user,
-          county: profile?.location_county,
-          constituency: profile?.location_constituency,
-          ward: profile?.location_ward
-        });
-      }
-    } catch (error) {
-      console.error('Error refreshing user:', error);
+  // Add debug logging
+  useEffect(() => {
+    if (context.user) {
+      console.log("Auth - User ID:", context.user.id, "Type:", typeof context.user.id);
     }
-  };
+  }, [context.user]);
 
   return context;
 }
