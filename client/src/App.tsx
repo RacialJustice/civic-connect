@@ -23,7 +23,7 @@ import { BudgetDetail } from './components/BudgetDetail';
 const HomePage = lazy(() => import('@/pages/home-page'));
 const AuthPage = lazy(() => import('@/pages/auth-page'));
 const ProfilePage = lazy(() => import('@/pages/profile-page'));
-const LeadersPage = lazy(() => import('@/pages/leaders-page/index'));
+const LeadersPage = lazy(() => import('@/pages/leaders-page')); // This will automatically find index.tsx
 const ForumsPage = lazy(() => import('@/pages/forums-page'));
 const EventsPage = lazy(() => import('@/pages/events-page')); // Update this line
 const DocumentsPage = lazy(() => import('@/pages/documents'));
