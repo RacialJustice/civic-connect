@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/lib/supabase";
 
 const EMERGENCY_TYPES = [
   { id: "medical", label: "Medical Emergency" },
@@ -34,13 +35,56 @@ export function EmergencyAlertForm() {
 
   const alertMutation = useMutation({
     mutationFn: async (alertData: any) => {
-      const res = await fetch("/api/emergency/alert", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(alertData),
+      // Insert alert
+      const { data: alert, error: alertError } = await supabase
+        .from('emergency_alerts')
+        .insert([{
+          user_id: user?.id,
+          type: alertData.type,
+          description: alertData.description,
+          location: alertData.location,
+          people_affected: alertData.peopleAffected,
+          assistance_needed: alertData.assistanceNeeded,
+          coordinates: alertData.coordinates,
+          ward: user?.ward,
+          constituency: user?.constituency,
+          county: user?.county,
+          status: 'active'
+        }])
+        .select()
+        .single();
+
+      if (alertError) throw alertError;
+
+      // Create notification for admins and authorities
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert([
+          {
+            type: 'emergency_alert',
+            user_id: null, // null means it's for all admins
+            title: `Emergency Alert: ${EMERGENCY_TYPES.find(t => t.id === alertData.type)?.label}`,
+            content: `Location: ${alertData.location}\nDescription: ${alertData.description}`,
+            priority: 'high',
+            metadata: {
+              alert_id: alert.id,
+              alert_type: alertData.type,
+              location: alertData.location,
+              coordinates: alertData.coordinates
+            }
+          }
+        ]);
+
+      if (notifError) throw notifError;
+
+      // Send real-time update through Supabase channel
+      await supabase.channel('emergency_alerts').send({
+        type: 'broadcast',
+        event: 'new_emergency',
+        payload: { alert }
       });
-      if (!res.ok) throw new Error("Failed to send alert");
-      return res.json();
+
+      return alert;
     },
     onSuccess: () => {
       toast({

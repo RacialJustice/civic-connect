@@ -91,29 +91,29 @@ export const Budget = () => {
 
   return (
     <WithLocation>
-      <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Budget Allocations</h1>
-          <Button onClick={downloadCSV} variant="outline">
+      <div className="container mx-auto p-2 sm:p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold">Budget Allocations</h1>
+          <Button onClick={downloadCSV} variant="outline" className="w-full sm:w-auto">
             <Download className="mr-2 h-4 w-4" />
             Download CSV
           </Button>
         </div>
 
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1">
+        <div className="flex flex-col sm:flex-row gap-4 mb-4 sm:mb-6">
+          <div className="w-full sm:flex-1">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by region name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
+                className="pl-8 w-full"
               />
             </div>
           </div>
           <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
             <SelectContent>
@@ -125,15 +125,15 @@ export const Budget = () => {
           </Select>
         </div>
 
-        <div className="border rounded-lg">
+        <div className="border rounded-lg overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Region Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Amount (KES)</TableHead>
-                <TableHead>Fiscal Year</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead className="whitespace-nowrap">Region Name</TableHead>
+                <TableHead className="whitespace-nowrap">Type</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Amount (KES)</TableHead>
+                <TableHead className="whitespace-nowrap">Fiscal Year</TableHead>
+                <TableHead className="whitespace-nowrap">Description</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,13 +143,13 @@ export const Budget = () => {
                   className="cursor-pointer hover:bg-muted"
                   onClick={() => navigate(`/budgets/${budget.id}`)}
                 >
-                  <TableCell className="font-medium">{budget.region_name}</TableCell>
+                  <TableCell className="font-medium max-w-[150px] truncate">{budget.region_name}</TableCell>
                   <TableCell className="capitalize">{budget.region_type}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right whitespace-nowrap">
                     {budget.amount.toLocaleString()}
                   </TableCell>
-                  <TableCell>{budget.fiscal_year}</TableCell>
-                  <TableCell>{budget.description}</TableCell>
+                  <TableCell className="whitespace-nowrap">{budget.fiscal_year}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{budget.description}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

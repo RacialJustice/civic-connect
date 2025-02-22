@@ -114,33 +114,33 @@ export const BudgetDetail = () => {
   const isOverBudget = totalSpent > totalAllocated;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-2 sm:p-4">
       <Button 
         variant="ghost" 
         onClick={() => navigate('/budgets')}
-        className="mb-6"
+        className="mb-4 sm:mb-6"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Budgets
       </Button>
 
-      <Card className="mb-6">
+      <Card className="mb-4 sm:mb-6">
         <CardHeader>
-          <CardTitle className="text-2xl">{budget.region_name}</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">{budget.region_name}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-3 gap-4">
-            <div>
+        <CardContent className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-2 sm:p-0">
               <h3 className="text-sm font-medium text-muted-foreground">Total Budget</h3>
-              <p className="text-2xl font-semibold">KES {totalAllocated.toLocaleString()}</p>
+              <p className="text-xl sm:text-2xl font-semibold">KES {totalAllocated.toLocaleString()}</p>
             </div>
-            <div>
+            <div className="p-2 sm:p-0">
               <h3 className="text-sm font-medium text-muted-foreground">Spent</h3>
-              <p className="text-2xl font-semibold">KES {totalSpent.toLocaleString()}</p>
+              <p className="text-xl sm:text-2xl font-semibold">KES {totalSpent.toLocaleString()}</p>
             </div>
-            <div>
+            <div className="p-2 sm:p-0">
               <h3 className="text-sm font-medium text-muted-foreground">Remaining</h3>
-              <p className={`text-2xl font-semibold ${isOverBudget ? 'text-red-500' : 'text-green-500'}`}>
+              <p className={`text-xl sm:text-2xl font-semibold ${isOverBudget ? 'text-red-500' : 'text-green-500'}`}>
                 KES {remainingBudget.toLocaleString()}
               </p>
             </div>
@@ -165,9 +165,9 @@ export const BudgetDetail = () => {
         <TabsContent value="allocations">
           <Card>
             <CardHeader>
-              <CardTitle>Budget Allocations</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Budget Allocations</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -193,9 +193,9 @@ export const BudgetDetail = () => {
         <TabsContent value="expenditures">
           <Card>
             <CardHeader>
-              <CardTitle>Expenditures</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Expenditures</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

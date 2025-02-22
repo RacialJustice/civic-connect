@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Phone, AlertTriangle, Heart, HelpCircle } from "lucide-react";
 
@@ -40,7 +40,7 @@ export function Footer() {
               ))}
             </div>
             <Button variant="link" asChild className="px-0">
-              <Link href="/emergency-contacts">View all emergency services</Link>
+              <Link to="/emergency-contacts">View all emergency services</Link>
             </Button>
           </div>
 
@@ -87,10 +87,11 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Quick Links</h3>
             <nav className="flex flex-col space-y-2">
-              <Link href="/about" className="text-sm hover:underline">About Us</Link>
-              <Link href="/contact" className="text-sm hover:underline">Contact</Link>
-              <Link href="/privacy" className="text-sm hover:underline">Privacy Policy</Link>
-              <Link href="/terms" className="text-sm hover:underline">Terms of Service</Link>
+              <Link to="/emergency-alert" className="text-sm hover:underline text-red-500 font-medium">Emergency Alert</Link>
+              <Link to="/about" className="text-sm hover:underline">About Us</Link>
+              <Link to="/contact" className="text-sm hover:underline">Contact</Link>
+              <Link to="/privacy" className="text-sm hover:underline">Privacy Policy</Link>
+              <Link to="/terms" className="text-sm hover:underline">Terms of Service</Link>
             </nav>
           </div>
 
