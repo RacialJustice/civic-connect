@@ -160,11 +160,11 @@ export function Navigation() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto">
-        <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 lg:px-8">
           {/* Logo - Responsive sizing */}
           <div className="flex shrink-0 items-center">
             <Link to="/" className="flex items-center">
-              <span className="text-lg font-semibold sm:text-xl md:text-2xl">
+              <span className="text-base font-semibold sm:text-xl md:text-2xl">
                 CivicConnect
               </span>
             </Link>
@@ -172,7 +172,7 @@ export function Navigation() {
 
           {/* Mobile Menu */}
           {isMobile ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Button 
                 variant="ghost" 
                 size="icon"
